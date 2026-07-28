@@ -19,11 +19,15 @@ export function renderHome() {
             '<a href="#portfolio" class="btn btn-primary">Conheça os projetos</a>' +
             '<a href="#contato" class="btn btn-secondary">Fale com a liga</a>' +
           '</div>' +
-        '</div>' +
-        '<aside class="hero-panel" aria-label="Destaques da LABTEC.IN">' +
-          '<img src="assets/logo labtec.png" alt="LABTEC.IN logo">' +
-        '</aside>' +
-      '</div>' +
+          '</div>' +
+          '<aside class="hero-panel" aria-label="Destaques da LABTEC.IN">' +
+          '<ul>' +
+            '<li><strong>' + impactNumbers.projetos + '+</strong><span>projetos e iniciativas acadêmicas</span></li>' +
+            '<li><strong>' + impactNumbers.membros + '+</strong><span>membros em formação científica</span></li>' +
+            '<li><strong>' + impactNumbers.parcerias + '+</strong><span>parcerias para inovação aplicada</span></li>' +
+          '</ul>' +
+          '</aside>' +
+          '</div>' +
     '</section>' +
 
     '<section class="page-section">' +
