@@ -6,6 +6,14 @@ O comando idempotente é:
 python manage.py seed_initial_data
 ```
 
+Para dados de borda de desenvolvimento e homologação, execute depois:
+
+```bash
+python manage.py seed_edge_case_data --password senha-de-teste
+```
+
+Esse comando é idempotente e cria casos de teste para hierarquia, vínculos institucionais, workflow editorial, parceiros, mensagens, links sociais, snapshots de métricas e perfis administrativos. Unidades institucionais continuam públicas por decisão de domínio; os casos de visibilidade são representados por vínculos e estados editoriais.
+
 Ele cria ou atualiza dados canônicos sem duplicação e sem criar usuários administrativos ou credenciais.
 
 ## Conteúdo inicial
