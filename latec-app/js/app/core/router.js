@@ -1,4 +1,5 @@
 import { renderHome } from '../modules/home.js';
+import { renderLatec } from '../modules/latec.js';
 import { renderQuemSomos } from '../modules/quem-somos.js';
 import { renderPortfolio, renderProjectDetail } from '../modules/portfolio.js';
 import { renderCapacitacao } from '../modules/capacitacao.js';
@@ -32,6 +33,8 @@ function router() {
     default:
       switch (route) {
         case '#home': renderHome(); break;
+        case '#laboratorio': renderHome('#laboratorio'); break;
+        case '#latec': renderLatec(); break;
         case '#quem-somos': renderQuemSomos(); break;
         case '#portfolio': renderPortfolio(); break;
         case '#capacitacao': renderCapacitacao(); break;

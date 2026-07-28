@@ -3,6 +3,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.common.models import EditorialStatus
 from apps.common.viewsets import PublicReadOnlyModelViewSet
 from apps.core.models import HeroBanner, InstitutionalSection, SiteSettings, SocialLink
 from apps.core.serializers import (
@@ -53,11 +54,11 @@ class HomeAPIView(APIView):
         )
 
         latest_posts = (
-            Post.objects.filter(is_published=True, unit__slug=unit_slug)
+            Post.objects.filter(editorial_status=EditorialStatus.PUBLISHED, unit__slug=unit_slug)
             .order_by("-published_at", "-created_at")[:6]
         )
         featured_projects = (
-            Project.objects.filter(is_published=True, unit__slug=unit_slug)
+            Project.objects.filter(editorial_status=EditorialStatus.PUBLISHED, unit__slug=unit_slug)
             .order_by("-published_at", "-created_at")[:6]
         )
         impact_metrics = (
