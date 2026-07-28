@@ -1,5 +1,5 @@
-const API_BASE = '/api/v1/site/home';
-const PEOPLE_API = '/api/v1/people';
+const API_BASE = 'http://127.0.0.1:8000/api/v1/site/home';
+const PEOPLE_API = 'http://127.0.0.1:8000/api/v1/people';
 
 async function loadJSON(path) {
   const response = await fetch(path, { headers: { Accept: 'application/json' } });
@@ -16,8 +16,13 @@ export async function fetchPeople() {
   return Array.isArray(data.people) ? data.people : [];
 }
 
-export async function fetchPeopleList() {
-  const data = await loadJSON(PEOPLE_API);
+export async function fetchPeopleList(params) {
+  const query = new URLSearchParams();
+  const withMemberships = (params && params.withMemberships) !== false;
+  if (withMemberships) query.set('with_memberships', '1');
+
+  const path = PEOPLE_API + (query.toString() ? '?' + query.toString() : '');
+  const data = await loadJSON(path);
   return Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : [];
 }
 

@@ -63,7 +63,7 @@ class HomeAPIView(APIView):
         )
         impact_metrics = (
             ImpactMetric.objects.filter(is_active=True, unit__slug=unit_slug)
-            .order_by("display_order", "title")
+            .order_by("display_order", "label")
         )
         people = (
             Person.objects.filter(is_active=True)

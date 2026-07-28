@@ -893,3 +893,59 @@ textarea:focus {
   }
 }
 
+.home-people-carousel {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 10px 4px 18px;
+}
+
+.person-card {
+  flex: 0 0 220px;
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+  scroll-snap-align: start;
+}
+
+.person-card .person-photo,
+.person-card .card-media-placeholder,
+.team-filters {
+  justify-content: center;
+}
+
+.team-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  justify-items: center;
+}
+
+.team-section .team-filters + .team-grid {
+  margin-top: 18px;
+}
+
+.person-card {
+  max-width: 520px;
+  width: 100%;
+}
+
+.person-info {
+  padding: 14px 16px;
+}
+
+.person-name {
+  font-weight: 700;
+  color: var(--color-ink);
+  font-size: 1rem;
+}
+
+.person-role {
+  color: #5b6b5b;
+  font-size: 0.92rem;
+  margin-top: 6px;
+}
+
