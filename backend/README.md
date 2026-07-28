@@ -26,8 +26,35 @@ pip install -r requirements/base.txt
 cp .env.example .env
 python manage.py migrate
 python manage.py seed_initial_data
+python manage.py seed_edge_case_data --password senha-de-teste
 python manage.py runserver
 ```
+
+### O que cada comando adiciona
+
+`python manage.py migrate` aplica as migrations do Django e cria ou atualiza a estrutura das tabelas. Ele não popula o conteúdo institucional e não cria usuários administrativos.
+
+`python manage.py seed_initial_data` cria os dados canônicos para desenvolvimento e homologação. Entre eles estão:
+
+- LABTEC.IN como unidade raiz e LATEC como unidade filha;
+- 33 pessoas e 43 vínculos institucionais;
+- eixos, mentorias, projetos, pesquisa, notícias, cursos e materiais;
+- métricas de impacto;
+- configurações do site, banner e seções institucionais.
+
+Esse comando é idempotente: pode ser executado novamente sem duplicar os registros. Ele não cria usuários, senhas ou credenciais administrativas.
+
+`python manage.py seed_edge_case_data --password senha-de-teste` adiciona dados artificiais para testar situações de borda, como:
+
+- unidades descendentes e uma unidade raiz independente;
+- pessoas sem vínculo, com múltiplos vínculos, vínculos inativos ou futuros;
+- conteúdos publicados, em rascunho, em revisão e arquivados;
+- parceiros, mensagens de contato, links sociais e snapshots de métricas;
+- perfis administrativos com escopos institucionais diferentes.
+
+Execute-o depois de `seed_initial_data`. Ele também é idempotente. A opção `--password` é opcional: sem ela, os dados administrativos não são criados; com ela, os usuários de teste recebem a senha informada. Esses usuários não são superusuários.
+
+`python manage.py createsuperuser` cria um usuário administrativo do Django com acesso ao `/admin/`. O comando solicita nome de usuário, e-mail e senha. Ele não cria uma `Person` nem um `Profile` institucional automaticamente.
 
 No Windows PowerShell, a ativação normalmente é:
 
@@ -36,14 +63,6 @@ No Windows PowerShell, a ativação normalmente é:
 ```
 
 O backend ficará disponível em `http://127.0.0.1:8000`. Mantenha esse terminal aberto enquanto desenvolver o frontend.
-
-O seed pode ser executado novamente com segurança. Ele cria LABTEC.IN, LATEC, os sete eixos da Liga, 43 memberships e os conteúdos iniciais, mas não cria usuário, senha nem credencial administrativa.
-
-Para acessar o Django Admin, crie um superusuário separadamente:
-
-```bash
-python manage.py createsuperuser
-```
 
 Esta versão suporta inicialização limpa: em desenvolvimento, teste e homologação, descarte a base configurada e o `MEDIA_ROOT` de teste antes de executar `migrate` e `seed_initial_data`. Não há caminho de atualização *in-place* para uma base populada anterior ao corte institucional; a migration falha intencionalmente ao encontrar conteúdo legado sem unidade.
 
