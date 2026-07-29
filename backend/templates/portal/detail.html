@@ -1,2 +1,37 @@
 {% extends 'portal/base.html' %}{% block title %}{{ page_title }} · LABTEC.IN{% endblock %}
-{% block content %}<section class="page-section compact"><div class="container"><p><a href="javascript:history.back()" class="btn btn-ghost">← Voltar</a></p><article class="content-panel detail-panel prose"><p class="section-kicker">{% if kind == 'project' %}Projeto{% elif kind == 'research_project' %}Pesquisa{% elif kind == 'post' %}Notícia{% elif kind == 'course' %}Capacitação{% else %}Conteúdo institucional{% endif %}</p><h1 class="section-title">{{ item.title }}</h1>{% if kind == 'project' or kind == 'research_project' or kind == 'post' %}<p>{{ item.summary }}</p>{% elif kind == 'academic_work' or kind == 'scientific_output' %}<p>{{ item.abstract }}</p>{% else %}<p>{{ item.description }}</p>{% endif %}{% if item.cover_image %}<img src="{{ item.cover_image.url }}" alt="">{% endif %}{% if item.startup_profile %}<div class="content-panel"><h2>Perfil da startup</h2><dl><dt>Área/foco</dt><dd>{{ item.startup_profile.focus_area }}</dd><dt>Espécie/objeto</dt><dd>{{ item.startup_profile.species_or_subject|default:'Não informado' }}</dd><dt>Instituição</dt><dd>{{ item.startup_profile.institution|default:'Não informado' }}</dd></dl></div>{% endif %}</article></div></section>{% endblock %}
+{% extends 'portal/base.html' %}
+{% block title %}{{ page_title }} · LABTEC.IN{% endblock %}
+{% block content %}
+<section class="page-section compact">
+  <div class="container">
+    <p><a href="javascript:history.back()" class="btn btn-ghost">← Voltar</a></p>
+    <article class="content-panel detail-panel prose">
+      <p class="section-kicker">{% if kind == 'project' %}Projeto{% elif kind == 'research_project' %}Pesquisa{% elif kind == 'post' %}Notícia{% elif kind == 'course' %}Capacitação{% else %}Conteúdo institucional{% endif %}</p>
+      <h1 class="section-title">{{ item.title }}</h1>
+      {% if kind == 'project' or kind == 'research_project' or kind == 'post' %}
+        <p>{{ item.summary }}</p>
+      {% elif kind == 'academic_work' or kind == 'scientific_output' %}
+        <p>{{ item.abstract }}</p>
+      {% else %}
+        <p>{{ item.description }}</p>
+      {% endif %}
+      {% if item.cover_image %}
+        <img src="{{ item.cover_image.url }}" alt="">
+      {% endif %}
+      {% if item.startup_profile %}
+        <div class="content-panel">
+          <h2>Perfil da startup</h2>
+          <dl>
+            <dt>Área/foco</dt>
+            <dd>{{ item.startup_profile.focus_area }}</dd>
+            <dt>Espécie/objeto</dt>
+            <dd>{{ item.startup_profile.species_or_subject|default:'Não informado' }}</dd>
+            <dt>Instituição</dt>
+            <dd>{{ item.startup_profile.institution|default:'Não informado' }}</dd>
+          </dl>
+        </div>
+      {% endif %}
+    </article>
+  </div>
+</section>
+{% endblock %}

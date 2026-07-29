@@ -44,6 +44,23 @@ def _public_people_for_unit(unit):
     )
 
 
+def _public_people_for_ecosystem():
+    today = timezone.localdate()
+    memberships = InstitutionMembership.objects.filter(
+        is_active=True,
+        is_public=True,
+    ).filter(
+        Q(start_date__isnull=True) | Q(start_date__lte=today),
+        Q(end_date__isnull=True) | Q(end_date__gte=today),
+    ).select_related("unit")
+    return Person.objects.filter(
+        is_active=True,
+        institution_memberships__in=memberships,
+    ).distinct().prefetch_related(
+        Prefetch("institution_memberships", queryset=memberships, to_attr="public_unit_memberships"),
+    )
+
+
 def _catalog(request, title, queryset, kind, template="portal/catalog.html"):
     if request.GET.get("q"):
         query = request.GET["q"].strip()
@@ -69,7 +86,7 @@ def home(request):
     # a unidade proprietária continua visível nos cards e nos detalhes.
     projects = _published(Project).select_related("unit", "category").order_by("-published_at", "title")[:6]
     posts = _published(Post).select_related("unit").order_by("-published_at", "title")[:3]
-    people = _public_people_for_unit(root_unit)[:9]
+    people = _public_people_for_ecosystem()
     metrics = ImpactMetric.objects.filter(is_active=True, unit__slug="labtec-in")
     return render(request, "portal/home.html", locals())
 
@@ -87,7 +104,13 @@ def unit_detail(request, slug="latec"):
 
 
 def about(request):
-    return unit_detail(request, "labtec-in")
+    unit = get_object_or_404(InstitutionalUnit, slug="labtec-in")
+    people = _public_people_for_ecosystem()
+    return render(request, "portal/about.html", {
+        "unit": unit,
+        "sections": unit.institutional_sections.filter(is_published=True),
+        "people": people,
+    })
 
 
 def portfolio(request):

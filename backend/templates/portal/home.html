@@ -1,9 +1,81 @@
-{% extends 'portal/base.html' %}{% load static %}{% block title %}LABTEC.IN · Laboratório{% endblock %}
+{% extends 'portal/base.html' %}
+{% block title %}LABTEC.IN · Laboratório{% endblock %}
 {% block content %}
-<section class="hero"><div class="container hero-grid"><div><p class="section-kicker">Laboratório LABTEC.IN</p><h1>Biotecnologia,<br><span class="brand-line">biodiversidade</span><br>e inovação</h1><p>{{ hero.subtitle|default:settings.description|default:'Infraestrutura, pesquisa aplicada e parcerias para transformar a ciência amazônica em solução real.' }}</p><div class="hero-actions"><a href="{% url 'portfolio' %}" class="btn btn-primary">Conheça os projetos</a><a href="{% url 'contact' %}" class="btn btn-secondary">Fale com o laboratório</a></div></div><aside class="hero-panel" aria-label="Áreas do LABTEC.IN"><ul><li><strong>Infraestrutura</strong><span>Salas, bancadas e instrumentação científica</span></li><li><strong>Pesquisa aplicada</strong><span>Protocolos, mentorias e apoio à iniciação científica</span></li><li><strong>Dados e inovação</strong><span>Modelagem, automação e visualização de resultados</span></li></ul></aside></div></section>
-<section class="page-section"><div class="container"><div class="section-heading"><p class="section-kicker">O que é o laboratório</p><h2 class="section-title">LABTEC.IN</h2><p class="section-lead">{{ settings.description|default:'Núcleo de execução prática para experimentos, prototipação, instrumentação científica e mentoria na UFAC.' }}</p></div><div class="card-grid">{% for section in sections %}<article class="card"><h3>{{ section.title }}</h3><p>{{ section.content }}</p></article>{% empty %}<p class="empty-state">Conteúdo institucional em preparação.</p>{% endfor %}</div></div></section>
-<section class="page-section compact"><div class="container"><div class="section-heading"><p class="section-kicker">Atualizações</p><h2 class="section-title">Últimas notícias</h2></div><div class="card-grid">{% include 'portal/partials/catalog_items.html' with items=posts kind='post' %}</div></div></section>
-<section class="page-section compact"><div class="container"><div class="section-heading"><p class="section-kicker">Portfólio</p><h2 class="section-title">Projetos em destaque</h2></div><div class="card-grid">{% include 'portal/partials/catalog_items.html' with items=projects kind='project' %}</div></div></section>
-<section class="page-section"><div class="container"><div class="section-heading"><p class="section-kicker">Nosso impacto</p><h2 class="section-title">Indicadores do LABTEC.IN</h2></div><div class="impact-grid">{% for metric in metrics %}<div class="impact-item"><span class="number">{{ metric.value }}{{ metric.suffix }}</span><span class="label">{{ metric.label }}</span></div>{% endfor %}</div></div></section>
-<section class="page-section compact"><div class="container"><div class="section-heading"><p class="section-kicker">Pessoas do laboratório</p><h2 class="section-title">Equipe</h2></div>{% include 'portal/partials/person_cards.html' with people=people profile_filter='orientador' %}</div></section>
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <p class="section-kicker">Laboratório LABTEC.IN</p>
+      <h1>Biotecnologia,<br><span class="brand-line">biodiversidade</span><br>e inovação</h1>
+      <p>{{ hero.subtitle|default:settings.description|default:'Infraestrutura, pesquisa aplicada e parcerias para transformar a ciência amazônica em solução real.' }}</p>
+      <div class="hero-actions">
+        <a href="{% url 'portfolio' %}" class="btn btn-primary">Conheça os projetos</a>
+        <a href="{% url 'contact' %}" class="btn btn-secondary">Fale com o laboratório</a>
+      </div>
+    </div>
+    <aside class="hero-panel" aria-label="Áreas do LABTEC.IN">
+      <ul>
+        <li><strong>Infraestrutura</strong><span>Salas, bancadas e instrumentação científica</span></li>
+        <li><strong>Pesquisa aplicada</strong><span>Protocolos, mentorias e apoio à iniciação científica</span></li>
+        <li><strong>Dados e inovação</strong><span>Modelagem, automação e visualização de resultados</span></li>
+      </ul>
+    </aside>
+  </div>
+</section>
+<section class="page-section">
+  <div class="container">
+    <div class="section-heading">
+      <p class="section-kicker">O que é o laboratório</p>
+      <h2 class="section-title">LABTEC.IN</h2>
+      <p class="section-lead">{{ settings.description|default:'Núcleo de execução prática para experimentos, prototipação, instrumentação científica e mentoria na UFAC.' }}</p>
+    </div>
+    <div class="card-grid">
+      {% for section in sections %}
+        <article class="card"><h3>{{ section.title }}</h3><p>{{ section.content }}</p></article>
+      {% empty %}
+        <p class="empty-state">Conteúdo institucional em preparação.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+<section class="page-section compact">
+  <div class="container">
+    <div class="section-heading"><p class="section-kicker">Atualizações</p><h2 class="section-title">Últimas notícias</h2></div>
+    <div class="card-grid">{% include 'portal/partials/catalog_items.html' with items=posts kind='post' %}</div>
+  </div>
+</section>
+<section class="page-section compact">
+  <div class="container">
+    <div class="section-heading"><p class="section-kicker">Portfólio</p><h2 class="section-title">Projetos em destaque</h2></div>
+    <div class="card-grid">{% include 'portal/partials/catalog_items.html' with items=projects kind='project' %}</div>
+  </div>
+</section>
+<section class="page-section">
+  <div class="container">
+    <div class="section-heading"><p class="section-kicker">Nosso impacto</p><h2 class="section-title">Indicadores do LABTEC.IN</h2></div>
+    <div class="impact-grid">
+      {% for metric in metrics %}
+        <div class="impact-item"><span class="number">{{ metric.value }}{{ metric.suffix }}</span><span class="label">{{ metric.label }}</span></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+<section class="page-section compact">
+  <div class="container">
+    <div class="section-heading"><p class="section-kicker">Pessoas do laboratório</p><h2 class="section-title">Equipe</h2></div>
+    <div class="profile-strip">
+      {% if people %}
+        <div class="profile-strip-track">
+          {% for person in people %}{% if forloop.counter|divisibleby:2 %}{% with membership=person.public_unit_memberships|first %}<a href="{% url 'about' %}" class="avatar" title="{{ person.full_name }} · {{ membership.role|default:'Equipe' }}">{% if person.photo %}<img src="{{ person.photo.url }}" alt="Foto de {{ person.full_name }}">{% else %}<span aria-hidden="true">{{ person.full_name|first }}</span>{% endif %}</a>{% endwith %}{% endif %}{% endfor %}
+          {% for person in people %}{% if forloop.counter|divisibleby:2 %}{% with membership=person.public_unit_memberships|first %}<a href="{% url 'about' %}" class="avatar" aria-hidden="true" tabindex="-1" title="{{ person.full_name }} · {{ membership.role|default:'Equipe' }}">{% if person.photo %}<img src="{{ person.photo.url }}" alt="">{% else %}<span aria-hidden="true">{{ person.full_name|first }}</span>{% endif %}</a>{% endwith %}{% endif %}{% endfor %}
+        </div>
+        <div class="profile-strip-track reverse">
+          {% for person in people %}{% if not forloop.counter|divisibleby:2 %}{% with membership=person.public_unit_memberships|first %}<a href="{% url 'about' %}" class="avatar" title="{{ person.full_name }} · {{ membership.role|default:'Equipe' }}">{% if person.photo %}<img src="{{ person.photo.url }}" alt="Foto de {{ person.full_name }}">{% else %}<span aria-hidden="true">{{ person.full_name|first }}</span>{% endif %}</a>{% endwith %}{% endif %}{% endfor %}
+          {% for person in people %}{% if not forloop.counter|divisibleby:2 %}{% with membership=person.public_unit_memberships|first %}<a href="{% url 'about' %}" class="avatar" aria-hidden="true" tabindex="-1" title="{{ person.full_name }} · {{ membership.role|default:'Equipe' }}">{% if person.photo %}<img src="{{ person.photo.url }}" alt="">{% else %}<span aria-hidden="true">{{ person.full_name|first }}</span>{% endif %}</a>{% endwith %}{% endif %}{% endfor %}
+        </div>
+      {% else %}
+        <p class="empty-state">Nenhuma pessoa pública cadastrada.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
 {% endblock %}

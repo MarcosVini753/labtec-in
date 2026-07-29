@@ -87,6 +87,7 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = env("STATIC_ROOT", default=str(BASE_DIR / "staticfiles"))
+STATICFILES_DIRS = [str(BASE_DIR / "static")] + env.list("STATICFILES_DIRS", default=[])
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = env("MEDIA_ROOT", default=str(BASE_DIR / "media"))

@@ -7,18 +7,19 @@
   <link rel="stylesheet" href="{% static 'core/portal.css' %}">
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
 <header class="site-header">
   <div class="container">
     <a href="{% url 'home' %}" class="logo" aria-label="LABTEC.IN">
-      <img src="{% static 'core/pics/logonobg.png' %}" alt="">
+      <img src="{% static 'core/pics/logo-labtecin.png' %}" alt="">
       <span>LABTEC<span class="dot">.IN</span></span>
     </a>
     <nav id="main-nav" class="main-nav" aria-label="Navegação principal"><ul>
       <li><a href="{% url 'home' %}">Home</a></li>
       <li><a href="{% url 'unit-detail' 'latec' %}">LATEC</a></li>
-      <li><a href="{% url 'about' %}">Sobre</a></li>
+      <li><a href="{% url 'about' %}">Quem Somos</a></li>
       <li><a href="{% url 'portfolio' %}">Portfólio</a></li>
       <li><a href="{% url 'courses' %}">Capacitação</a></li>
       <li><a href="{% url 'news' %}">Notícias</a></li>
@@ -27,11 +28,14 @@
     <button id="mobile-menu-toggle" class="mobile-menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="main-nav">☰</button>
   </div>
 </header>
-<main class="site-main">{% block content %}{% endblock %}</main>
+<main class="site-main">
+  {% block content %}{% endblock %}
+</main>
 <footer class="site-footer"><div class="container footer-grid"><div><p class="footer-brand">LABTEC<span class="dot">.IN</span></p><p>© 2026 LABTEC.IN · Laboratório de Biotecnologia, Biodiversidade e Inovação.</p></div><nav class="footer-links" aria-label="Links rápidos"><a href="{% url 'portfolio' %}">Portfólio</a><a href="{% url 'courses' %}">Capacitação</a><a href="{% url 'news' %}">Notícias</a><a href="{% url 'contact' %}">Contato</a></nav></div></footer>
 <script>
   const menu = document.getElementById('mobile-menu-toggle');
   const nav = document.getElementById('main-nav');
   menu?.addEventListener('click', () => { const open = nav.classList.toggle('open'); menu.setAttribute('aria-expanded', open); });
 </script>
-</body></html>
+</body>
+</html>

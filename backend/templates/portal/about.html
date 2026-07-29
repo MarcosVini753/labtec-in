@@ -1,0 +1,46 @@
+{% extends 'portal/base.html' %}
+{% block title %}Quem Somos · LABTEC.IN{% endblock %}
+{% block content %}
+<section class="page-section">
+  <div class="container">
+    <div class="section-heading">
+      <p class="section-kicker">Institucional</p>
+      <h1 class="section-title">Quem Somos</h1>
+      <p class="section-lead">Pesquisa, ensino e extensão com foco em tecnologia, biodiversidade e inovação amazônica.</p>
+    </div>
+    <article class="content-panel prose">
+      <p>A LATEC.IN (Liga Acadêmica de Biotecnologia, Biodiversidade e Inovação) é um núcleo de pesquisa, ensino e extensão da Universidade Federal do Acre. Nossa missão é desenvolver soluções tecnológicas e científicas para a Amazônia, promovendo a formação de profissionais capacitados e conscientes do papel da ciência na sociedade.</p>
+      <p><strong>Visão:</strong> tornar-se referência nacional em inovação biotecnológica e proteção da biodiversidade amazônica.</p>
+      <p><strong>Valores:</strong> ética, inovação, sustentabilidade, colaboração e excelência.</p>
+    </article>
+  </div>
+</section>
+<section class="page-section compact">
+  <div class="container">
+    <div class="split-grid">
+      <div class="content-panel">
+        <h2 class="section-title">Linhas de Atuação</h2>
+        <ul>
+          <li>Inteligência Artificial aplicada à Biotecnologia</li>
+          <li>Bootcamp de Startups</li>
+          <li>Biodiversidade no setor acadêmico</li>
+          <li>Farmacologia e biotecnologia para pesquisas científicas</li>
+        </ul>
+      </div>
+      <div class="content-panel">
+        <h2 class="section-title">Como Atuamos</h2>
+        <p>Organizamos capacitações, projetos de pesquisa, ações de extensão e protótipos que aproximam estudantes, docentes e parceiros externos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="page-section compact">
+  <div class="container">
+    <div class="section-heading">
+      <p class="section-kicker">Equipe</p>
+      <h2 class="section-title">Nossa Equipe</h2>
+    </div>
+    <div id="quem-somos-grid" class="team-grid">{% include 'portal/partials/person_cards.html' with people=people %}</div>
+  </div>
+</section>
+{% endblock %}

@@ -9,8 +9,9 @@ from apps.core import web_views
 
 urlpatterns = [
     path("", web_views.home, name="home"),
-    path("unidades/<slug:slug>/", web_views.unit_detail, name="unit-detail"),
     path("sobre/", web_views.about, name="about"),
+    path("quem-somos/", web_views.about, name="about"),
+    path("unidades/<slug:slug>/", web_views.unit_detail, name="unit-detail"),
     path("portfolio/", web_views.portfolio, name="portfolio"),
     path("portfolio/projetos/", web_views.projects, name="projects"),
     path("portfolio/projetos/startups/", web_views.startups, name="startups"),
