@@ -6,7 +6,9 @@ A LATEC é uma liga acadêmica vinculada ao LABTEC.IN. Ela é uma unidade filha 
 
 ## Estado implementado
 
-O repositório possui frontend estático e backend Django com Django REST Framework, Django Admin e API `/api/v1/`. O backend organiza identidade institucional, pessoas, eixos, pesquisas, trabalhos acadêmicos, portfólio, produção científica, notícias, cursos, transparência, parcerias e métricas.
+O portal público é renderizado no servidor por Django Templates, com HTMX para atualizações parciais e Alpine.js para estado local. O backend Django oferece Django REST Framework, Django Admin e API `/api/v1/`. O backend organiza identidade institucional, pessoas, eixos, pesquisas, trabalhos acadêmicos, portfólio, produção científica, notícias, cursos, transparência, parcerias e métricas.
+
+As views em `apps/core/web_views.py` consultam o ORM diretamente e renderizam os templates de `backend/templates/portal/`. A API `/api/v1/` continua disponível para consumo externo e como endpoint do HTMX quando conveniente. Um frontend estático em JavaScript puro existiu como protótipo, mas não é mais necessário para testar ou operar o portal.
 
 O app `institutional` modela LABTEC.IN como raiz e LATEC como filha. O seed cria 43 memberships, associa os sete eixos e os nove mentores à LATEC e classifica os conteúdos iniciais por unidade. Hierarquia e memberships possuem validações no modelo e no banco.
 
@@ -72,4 +74,4 @@ Os sete eixos pertencem à LATEC e organizam prioritariamente as atividades da L
 - Coordenadores de unidade e mentores atuam em rascunhos e revisões dentro do próprio escopo.
 - Slugs identificam páginas públicas e o frontend deve usar os valores entregues pela API. Os dois slugs históricos com `latecin` foram substituídos sem redirecionamento.
 
-O frontend e a ampliação da Home com conteúdos editoriais permanecem fora desta entrega.
+O portal público é server-rendered pelo Django; não há frontend separado em produção. A Home agrega projetos, notícias, pessoas e métricas do ecossistema, além das configurações, banners e seções do LABTEC.IN.

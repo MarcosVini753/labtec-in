@@ -41,7 +41,8 @@ Esta decisão supera o ADR 0006. Os demais ADRs permanecem como registro das dec
 
 ## Consequências negativas e riscos
 
-- Mudança incompatível dentro da API v1, exigindo atualização posterior do frontend.
+- Mudança incompatível dentro da API v1, exigindo atualização de clientes externos que consomem a API.
+- O portal público server-rendered não foi impactado, pois consulta o ORM diretamente via `web_views.py`.
 - Migrations destrutivas dependem de backup e preflight.
 - A limpeza de arquivos órfãos é destrutiva e depende de inventário e backup prévios.
 - Autores externos precisam ser cadastrados como pessoas para integrar a autoria estruturada.

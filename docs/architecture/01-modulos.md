@@ -8,7 +8,7 @@ O backend é dividido em apps Django por domínio. `institutional` centraliza a 
 | --- | --- |
 | `institutional` | Unidades, hierarquia e memberships. |
 | `accounts` | Perfis administrativos e escopo autorizado por unidade. |
-| `core` | Configurações, banners, seções institucionais e links sociais. |
+| `core` | Configurações, banners, seções institucionais, links sociais e web views do portal público. |
 | `people` | Cadastro da pessoa física, independente de autenticação. |
 | `axes` | Sete eixos da LATEC e mentorias. |
 | `research` | Pesquisas formais, TCCs e outros trabalhos acadêmicos. |
@@ -19,7 +19,7 @@ O backend é dividido em apps Django por domínio. `institutional` centraliza a 
 | `transparency` | Documentos de transparência. |
 | `partnerships` | Parceiros por unidade e mensagens de contato. |
 | `metrics` | Métricas e históricos de valores por unidade. |
-| `common` | Modelos-base, status editorial e utilidades compartilhadas. |
+| `common` | Modelos-base, status editorial, busca global, middleware e utilidades compartilhadas. |
 
 Não existe app ou catálogo central de mídia. Cada arquivo pertence diretamente ao modelo de domínio que o publica.
 
@@ -46,8 +46,11 @@ Todos os materiais associados a um curso publicado são públicos. `CourseMateri
 
 Não existem mais models de trilha, evento, categoria ou tag de notícia, papel público global ou catálogo central de mídia. Arquivos pertencem aos próprios modelos que os publicam.
 
+## Portal público
+
+O portal público é renderizado no servidor por Django Templates. As views em `apps/core/web_views.py` consultam o ORM diretamente e renderizam os templates de `backend/templates/portal/`. HTMX atualiza fragmentos da página sem reload e Alpine.js gerencia estado local. A API `/api/v1/` continua disponível para consumo externo.
+
 ## Limites atuais
 
-- O frontend ainda consome contratos anteriores e deve ser adaptado separadamente.
-- A Home não agrega pesquisas, projetos, notícias ou cursos.
+- A Home agrega projetos, notícias, pessoas e métricas do ecossistema, além das configurações do LABTEC.IN.
 - Não há endpoint público para memberships nem snapshots de métricas.

@@ -75,4 +75,4 @@ O acesso administrativo a descendentes é uma permissão do perfil; a inclusão 
 
 ## Estado do corte
 
-Unidades obrigatórias e sempre públicas, memberships com visibilidade própria, filtros com agregação de um nível e remoção de `Person.role` estão consolidados. O frontend e a expansão da Home continuam como trabalhos posteriores.
+Unidades obrigatórias e sempre públicas, memberships com visibilidade própria, filtros com agregação de um nível e remoção de `Person.role` estão consolidados. O portal público server-rendered atende às seções descritas neste documento. A Home já agrega projetos, notícias, pessoas e métricas do ecossistema.

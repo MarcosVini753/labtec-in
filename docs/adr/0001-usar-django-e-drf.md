@@ -8,7 +8,7 @@ Aceita
 
 O portal do LABTEC.IN precisa gerenciar conteúdos do Laboratório de Biotecnologia, Biodiversidade e Inovação e de suas unidades filhas, incluindo a LATEC.
 
-O repositório possui frontend em HTML, CSS e JavaScript puro e backend Django já implementado. A arquitetura requer persistência, administração institucional, workflow editorial e API pública `/api/v1/`.
+O repositório possui backend Django já implementado. A arquitetura requer persistência, administração institucional, workflow editorial e API pública `/api/v1/`. O portal público é renderizado no servidor por Django Templates, com HTMX para atualizações parciais e Alpine.js para estado local. Um frontend estático em HTML, CSS e JavaScript puro existiu como protótipo e cliente SPA da API, mas não é mais necessário para testar ou operar o portal.
 
 ## Decisão
 
@@ -28,7 +28,9 @@ A LATEC será modelada como unidade institucional dentro do mesmo backend e da m
 - ORM, migrations, autenticação, permissões e Django Admin integrados.
 - Evolução incremental da API.
 - Administração de conteúdos do laboratório e de unidades filhas.
-- Substituição gradual dos dados locais do frontend.
+- Portal público server-rendered pelo próprio Django, sem necessidade de frontend separado.
+- HTMX e Alpine.js fornecem interatividade sem transformar o portal em um SPA.
+- A API `/api/v1/` continua disponível para consumo externo e integração com outros clientes.
 
 ## Riscos e cuidados
 

@@ -11,6 +11,8 @@ O backend expõe recursos anônimos e predominantemente somente leitura em `/api
 }
 ```
 
+A API é consumida pelo portal público server-rendered (via HTMX para requisições parciais) e por clientes externos. O portal também consulta o ORM diretamente através das web views em `apps/core/web_views.py`, sem passar pela API.
+
 ## Endpoints principais
 
 ```txt
@@ -107,4 +109,4 @@ As duas URLs antigas retornam `404`.
 
 ## Home
 
-`/api/v1/site/home/` retorna somente configurações, banners, seções e links sociais vinculados diretamente a `labtec-in`. O opt-in de ecossistema não amplia esse payload. Pesquisas, projetos, notícias e cursos continuam disponíveis em seus endpoints próprios.
+`/api/v1/site/home/` retorna somente configurações, banners, seções e links sociais vinculados diretamente a `labtec-in`. O opt-in de ecossistema não amplia esse payload. Pesquisas, projetos, notícias e cursos continuam disponíveis em seus endpoints próprios. O portal público server-rendered também consulta o ORM diretamente em `web_views.home` para compor a página inicial com dados do ecossistema.

@@ -1,6 +1,6 @@
 # Deploy e ambientes do portal LABTEC.IN
 
-A mudança institucional não altera a estratégia técnica de implantação. O mesmo frontend, backend Django, Django Admin e API `/api/v1/` atendem o LABTEC.IN e suas unidades, incluindo a seção LATEC.
+O backend Django serve o portal público server-rendered (Django Templates + HTMX + Alpine.js), a API REST `/api/v1/` e o Django Admin. O mesmo backend atende o LABTEC.IN e suas unidades, incluindo a seção LATEC. Não há frontend separado para implantar — o portal é servido pelo próprio Django.
 
 ## Ambientes previstos
 
@@ -9,7 +9,7 @@ A mudança institucional não altera a estratégia técnica de implantação. O 
 - SQLite permitido no início.
 - `DEBUG=True`.
 - arquivos locais para mídia.
-- CORS liberado apenas para o frontend local.
+- CORS liberado apenas para o frontend local (se houver cliente externo).
 - mídia em diretório local por `MEDIA_ROOT`.
 
 ### Homologação
@@ -44,6 +44,13 @@ Nenhum domínio definitivo é estabelecido por esta documentação.
 - `Pillow` para campos de imagem.
 - `drf-spectacular` para OpenAPI.
 - servidor WSGI ou ASGI conforme a estratégia de implantação.
+- HTMX e Alpine.js via CDN nos templates do portal.
+
+## Portal público
+
+O portal público é renderizado pelo próprio Django. As views em `apps/core/web_views.py` consultam o ORM diretamente e renderizam os templates de `backend/templates/portal/`. HTMX faz requisições parciais para atualizar fragmentos da página sem reload; Alpine.js gerencia estado local no navegador.
+
+Em produção, os assets estáticos (CSS, JS, imagens) são servidos via `collectstatic` para o diretório configurado em `STATIC_ROOT`. A mídia enviada pelos usuários é servida do diretório configurado em `MEDIA_ROOT`.
 
 ## Política de mídia
 

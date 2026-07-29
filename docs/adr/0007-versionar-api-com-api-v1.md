@@ -6,7 +6,7 @@ Aceita
 
 ## Contexto
 
-O frontend migra gradualmente de dados locais para chamadas HTTP. A API precisa de prefixo explícito e consistente.
+O portal público server-rendered consulta o ORM diretamente via `web_views.py`. A API `/api/v1/` é consumida por clientes externos e pelo HTMX para requisições parciais. A API precisa de prefixo explícito e consistente.
 
 A versão inicial ainda está em desenvolvimento e não possui consumidores externos estáveis conhecidos.
 
