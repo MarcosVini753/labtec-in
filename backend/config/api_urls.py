@@ -2,6 +2,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from apps.axes.views import ResearchAxisViewSet
+from apps.common.search import GlobalSearchAPIView
 from apps.core.views import HomeAPIView, SiteSettingsViewSet
 from apps.institutional.views import InstitutionalUnitViewSet
 from apps.learning.views import CourseViewSet
@@ -34,5 +35,6 @@ router.register("contact", ContactMessageViewSet, basename="contact")
 
 urlpatterns = [
     path("site/home/", HomeAPIView.as_view(), name="site-home"),
+    path("search/", GlobalSearchAPIView.as_view(), name="global-search"),
     path("", include(router.urls)),
 ]

@@ -2,7 +2,15 @@ from django.contrib import admin
 
 from apps.common.admin_actions import EDITORIAL_ADMIN_ACTIONS
 from apps.common.admin_scoping import ReferenceAdminMixin, UnitScopedAdminMixin, UnitScopedInlineMixin
-from apps.portfolio.models import Project, ProjectCategory, ProjectLink, ProjectResult, ProjectStatus, ProjectTeamMember
+from apps.portfolio.models import (
+    Project,
+    ProjectCategory,
+    ProjectLink,
+    ProjectResult,
+    ProjectStartupProfile,
+    ProjectStatus,
+    ProjectTeamMember,
+)
 
 
 @admin.register(ProjectCategory)
@@ -38,6 +46,11 @@ class ProjectLinkInline(UnitScopedInlineMixin, admin.TabularInline):
     extra = 0
 
 
+class ProjectStartupProfileInline(UnitScopedInlineMixin, admin.StackedInline):
+    model = ProjectStartupProfile
+    extra = 0
+
+
 @admin.register(Project)
 class ProjectAdmin(UnitScopedAdminMixin, admin.ModelAdmin):
     axis_lookup = "axis"
@@ -53,7 +66,7 @@ class ProjectAdmin(UnitScopedAdminMixin, admin.ModelAdmin):
         ("Conteúdo", {"fields": ("summary", "problem", "solution", "cover_image")}),
         ("Publicação", {"fields": ("editorial_status", "published_at", "include_in_parent_ecosystem")}),
     )
-    inlines = (ProjectTeamMemberInline, ProjectResultInline, ProjectLinkInline)
+    inlines = (ProjectStartupProfileInline, ProjectTeamMemberInline, ProjectResultInline, ProjectLinkInline)
 
 
 @admin.register(ProjectTeamMember)

@@ -22,7 +22,7 @@ from apps.metrics.models import ImpactMetric
 from apps.news.models import Post
 from apps.partnerships.models import ContactMessage, Partner
 from apps.people.models import Person
-from apps.portfolio.models import Project, ProjectResult, ProjectStatus, ProjectTeamMember
+from apps.portfolio.models import Project, ProjectResult, ProjectStartupProfile, ProjectStatus, ProjectTeamMember
 from apps.research.models import AcademicWork, ResearchProject, ResearchProjectMember
 from apps.scientific.models import ScientificOutput
 from apps.transparency.models import TransparencyDocument
@@ -46,12 +46,12 @@ class CmsApiTests(TestCase):
         expected_counts = {
             InstitutionalUnit: 2,
             InstitutionMembership: 43,
-            Person: 33,
+            Person: 36,
             ResearchAxis: 7,
             AxisMentorship: 9,
-            Project: 2,
+            Project: 5,
             ProjectResult: 3,
-            ProjectTeamMember: 5,
+            ProjectTeamMember: 17,
             ResearchProject: 1,
             ResearchProjectMember: 2,
             Post: 2,
@@ -98,8 +98,12 @@ class CmsApiTests(TestCase):
             {
                 "fabrica-de-ensino-bootcamp-de-startups",
                 "extensao-em-tecnologias-sustentaveis",
+                "farma-amazonia",
+                "remedio-vivo",
+                "amazon-green-line",
             },
         )
+        self.assertEqual(ProjectStartupProfile.objects.count(), 3)
         self.assertEqual(
             set(Post.objects.values_list("slug", flat=True)),
             {

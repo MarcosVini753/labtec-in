@@ -67,6 +67,24 @@ class Project(BaseModel):
         return self.title
 
 
+class ProjectStartupProfile(BaseModel):
+    project = models.OneToOneField(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="startup_profile",
+    )
+    focus_area = models.CharField(max_length=180)
+    species_or_subject = models.CharField(max_length=220, blank=True)
+    institution = models.CharField(max_length=220, blank=True)
+
+    class Meta:
+        verbose_name = "perfil de startup do projeto"
+        verbose_name_plural = "perfis de startup dos projetos"
+
+    def __str__(self) -> str:
+        return f"Startup: {self.project}"
+
+
 class ProjectTeamMember(BaseModel):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="team_members")
     person = models.ForeignKey("people.Person", on_delete=models.CASCADE, related_name="project_memberships")

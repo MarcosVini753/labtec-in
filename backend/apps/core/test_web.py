@@ -1,0 +1,98 @@
+from django.contrib.auth import get_user_model
+from django.core.management import call_command
+from django.test import TestCase
+
+from apps.accounts.models import Profile
+from apps.common.models import EditorialStatus
+from apps.institutional.models import InstitutionalUnit
+from apps.portfolio.models import Project
+from apps.partnerships.models import ContactMessage
+
+
+class PortalWebTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        call_command("seed_initial_data", verbosity=0)
+
+    def test_public_pages_and_startup_detail_are_database_backed(self):
+        for path in (
+            "/",
+            "/unidades/latec/",
+            "/sobre/",
+            "/portfolio/",
+            "/portfolio/projetos/startups/",
+            "/portfolio/projetos/farma-amazonia/",
+            "/portfolio/pesquisas/",
+            "/portfolio/tccs/",
+            "/portfolio/producao-cientifica/",
+            "/portfolio/transparencia/",
+            "/noticias/",
+            "/capacitacao/",
+            "/parceiros/",
+            "/contato/",
+            "/busca/",
+        ):
+            with self.subTest(path=path):
+                self.assertEqual(self.client.get(path).status_code, 200)
+        home = self.client.get("/")
+        self.assertContains(home, "people/marta.png")
+        self.assertContains(home, "Docentes e mentores")
+        self.assertNotContains(home, ">Todos<")
+        self.assertNotContains(home, ">Ligantes<")
+        self.assertContains(self.client.get("/portfolio/projetos/farma-amazonia/"), "Astrocaryum ulei")
+
+    def test_home_highlights_published_content_from_the_ecosystem(self):
+        home = self.client.get("/")
+        latec = self.client.get("/unidades/latec/")
+        self.assertContains(home, "Farma Amazônia")
+        self.assertContains(home, "Coordenadora da LATEC é premiada por inovação tecnológica")
+        self.assertNotContains(home, 'data-profile-role="ligante"')
+        self.assertNotContains(home, '<span class="tag">Ligante</span>')
+        self.assertContains(latec, "Farma Amazônia")
+        self.assertContains(latec, "Ligante")
+
+    def test_global_search_filters_unpublished_content_and_unit(self):
+        Project.objects.create(
+            unit=InstitutionalUnit.objects.get(slug="latec"),
+            title="Rascunho secreto",
+            slug="rascunho-secreto",
+            editorial_status=EditorialStatus.DRAFT,
+        )
+        response = self.client.get("/api/v1/search/?q=farma&type=project&unit=latec")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(all(item["slug"] != "rascunho-secreto" for item in response.json()["results"]))
+        self.assertTrue(any(item["slug"] == "farma-amazonia" for item in response.json()["results"]))
+
+    def test_contact_api_returns_htmx_feedback_and_persists_message(self):
+        response = self.client.post(
+            "/api/v1/contact/",
+            {
+                "contact_type": "partnership",
+                "subject": "Parceria",
+                "name": "Pessoa de teste",
+                "email": "teste@example.com",
+                "message": "Gostaria de conversar.",
+            },
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertContains(response, "Mensagem enviada", status_code=201)
+        self.assertEqual(ContactMessage.objects.get().status, ContactMessage.MessageStatus.NEW)
+
+    def test_only_active_administrative_scope_can_use_portal_login(self):
+        user = get_user_model().objects.create_user(username="sem-escopo", password="senha")
+        self.assertEqual(self.client.post("/entrar/", {"username": user.username, "password": "senha"}).status_code, 200)
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+        scoped = get_user_model().objects.create_user(username="coordenador", password="senha", is_staff=True)
+        profile = Profile.objects.create(
+            user=scoped,
+            role=Profile.AdminRole.LAB_COORDINATOR,
+            primary_unit=InstitutionalUnit.objects.get(slug="labtec-in"),
+        )
+        response = self.client.post("/entrar/", {"username": scoped.username, "password": "senha"})
+        self.assertRedirects(response, "/admin/dashboard/")
+        self.assertEqual(self.client.get("/admin/dashboard/").status_code, 200)
+        partial = self.client.get("/admin/dashboard/?unit=latec", HTTP_HX_REQUEST="true")
+        self.assertEqual(partial.status_code, 200)
+        self.assertContains(partial, "published")

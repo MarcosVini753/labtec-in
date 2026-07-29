@@ -16,7 +16,15 @@ from apps.learning.models import Course, CourseMaterial
 from apps.metrics.models import ImpactMetric
 from apps.news.models import Post
 from apps.people.models import Person
-from apps.portfolio.models import Project, ProjectCategory, ProjectLink, ProjectResult, ProjectStatus, ProjectTeamMember
+from apps.portfolio.models import (
+    Project,
+    ProjectCategory,
+    ProjectLink,
+    ProjectResult,
+    ProjectStartupProfile,
+    ProjectStatus,
+    ProjectTeamMember,
+)
 from apps.research.models import ResearchProject, ResearchProjectMember
 
 
@@ -56,6 +64,12 @@ PEOPLE = [
     (33, "Thiago Schuster Casas", "Ligante", "", "js/pics/Thiago Schuster Casas.jpeg"),
 ]
 
+STARTUP_PEOPLE = [
+    "José Luiz Bezerra de Faria Filho",
+    "Roberta de Freitas Lopes",
+    "Matheus Matos do Nascimento",
+]
+
 PROJECTS = [
     {
         "title": "Fábrica de Ensino: Bootcamp de Startups",
@@ -81,6 +95,60 @@ PROJECTS = [
         "solution": "Desenvolver protótipos de baixo custo e treinamentos comunitários.",
         "results": ["Manual de boas práticas"],
         "team": [2, 3],
+        "link": "",
+    },
+    {
+        "title": "Farma Amazônia",
+        "category": "Startup",
+        "area": "Fitoterápicos & Espécies Nativas",
+        "status": "Em andamento",
+        "year": 2026,
+        "summary": "Startup voltada a soluções com espécies nativas da Amazônia.",
+        "problem": "",
+        "solution": "",
+        "results": [],
+        "team_names": ["Marta Adelino", "José Luiz Bezerra de Faria Filho", "Dayam Marques", "Anne Grace", "Roberta de Freitas Lopes"],
+        "startup_profile": {
+            "focus_area": "Fitoterápicos & Espécies Nativas",
+            "species_or_subject": "Astrocaryum ulei (Murumuru)",
+            "institution": "UFAC/LABTEC.IN",
+        },
+        "link": "",
+    },
+    {
+        "title": "Remédio Vivo",
+        "category": "Startup",
+        "area": "Microverdes & Nutracêuticos",
+        "status": "Em andamento",
+        "year": 2026,
+        "summary": "Startup dedicada ao estudo de microverdes e nutracêuticos.",
+        "problem": "",
+        "solution": "",
+        "results": [],
+        "team_names": ["Dayam Marques", "Anne Grace", "Marta Adelino"],
+        "startup_profile": {
+            "focus_area": "Microverdes & Nutracêuticos",
+            "species_or_subject": "",
+            "institution": "UFAC/LABTEC.IN",
+        },
+        "link": "",
+    },
+    {
+        "title": "Amazon Green Line",
+        "category": "Startup",
+        "area": "PANC",
+        "status": "Em andamento",
+        "year": 2026,
+        "summary": "Startup de pesquisa e inovação com plantas alimentícias não convencionais.",
+        "problem": "",
+        "solution": "",
+        "results": [],
+        "team_names": ["Marilene Lima", "Almecina Balbino", "Matheus Matos do Nascimento", "Marta Adelino"],
+        "startup_profile": {
+            "focus_area": "PANC",
+            "species_or_subject": "Alternanthera sessilis (Espinafre brasileiro)",
+            "institution": "UFAC/LABTEC.IN",
+        },
         "link": "",
     },
 ]
@@ -147,6 +215,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.person_by_source_id = {}
         self.membership_role_by_source_id = {}
+        self.startup_people = {}
         self.seed_institutional_units()
         self.seed_people()
         self.seed_institution_memberships()
@@ -201,6 +270,12 @@ class Command(BaseCommand):
             self.attach_local_file(person, "photo", photo_path)
             self.person_by_source_id[source_id] = person
             self.membership_role_by_source_id[source_id] = role_name
+        for order, name in enumerate(STARTUP_PEOPLE, start=len(PEOPLE) + 1):
+            person, _created = Person.objects.update_or_create(
+                slug=slugify(name),
+                defaults={"full_name": name, "is_active": True, "display_order": order},
+            )
+            self.startup_people[name] = person
 
     def seed_institution_memberships(self):
         units_by_role = {
@@ -331,7 +406,7 @@ class Command(BaseCommand):
                     title=result_title,
                     defaults={"description": "", "display_order": result_order},
                 )
-            for member_order, source_id in enumerate(item["team"], start=1):
+            for member_order, source_id in enumerate(item.get("team", []), start=1):
                 person = self.person_by_source_id.get(source_id)
                 if not person:
                     continue
@@ -339,6 +414,19 @@ class Command(BaseCommand):
                     project=project,
                     person=person,
                     defaults={"role": "Equipe", "is_lead": member_order == 1, "display_order": member_order},
+                )
+            for member_order, name in enumerate(item.get("team_names", []), start=1):
+                person = self.startup_people.get(name) or Person.objects.filter(slug=slugify(name)).first()
+                if person:
+                    ProjectTeamMember.objects.update_or_create(
+                        project=project,
+                        person=person,
+                        defaults={"role": "Equipe", "is_lead": member_order == 1, "display_order": member_order},
+                    )
+            if item.get("startup_profile"):
+                ProjectStartupProfile.objects.update_or_create(
+                    project=project,
+                    defaults=item["startup_profile"],
                 )
             if item["link"]:
                 ProjectLink.objects.update_or_create(
@@ -492,6 +580,8 @@ class Command(BaseCommand):
         if not source_relative_path or source_relative_path.startswith(("http://", "https://")):
             return
         source_path = Path(settings.BASE_DIR).parent / source_relative_path
+        if not source_path.exists():
+            source_path = Path(settings.BASE_DIR).parent / "prototipo" / "css" / source_relative_path
         if not source_path.exists():
             return
 

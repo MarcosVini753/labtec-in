@@ -1,0 +1,13 @@
+{% for item in items %}
+<article class="card">
+  {% if kind == 'project' and item.cover_image %}<img class="card-media" src="{{ item.cover_image.url }}" alt="">{% elif kind == 'post' and item.cover_image %}<img class="card-media" src="{{ item.cover_image.url }}" alt="">{% endif %}
+  <div class="card-content">
+    <p class="section-kicker">{% if kind == 'project' %}Projeto{% elif kind == 'post' %}Atualização{% elif kind == 'research_project' %}Pesquisa{% elif kind == 'academic_work' %}Trabalho acadêmico{% elif kind == 'scientific_output' %}Produção científica{% elif kind == 'transparency_document' %}Transparência{% elif kind == 'course' %}Capacitação{% else %}Parceiro{% endif %}</p>
+    <h3>{% if kind == 'project' %}<a href="{% url 'project-detail' item.slug %}">{{ item.title }}</a>{% elif kind == 'post' %}<a href="{% url 'news-detail' item.slug %}">{{ item.title }}</a>{% elif kind == 'research_project' %}<a href="{% url 'research-detail' item.slug %}">{{ item.title }}</a>{% elif kind == 'academic_work' %}<a href="{% url 'academic-work-detail' item.slug %}">{{ item.title }}</a>{% elif kind == 'scientific_output' %}<a href="{% url 'scientific-output-detail' item.slug %}">{{ item.title }}</a>{% elif kind == 'transparency_document' %}<a href="{% url 'transparency-detail' item.slug %}">{{ item.title }}</a>{% elif kind == 'course' %}<a href="{% url 'course-detail' item.slug %}">{{ item.title }}</a>{% else %}{{ item.name }}{% endif %}</h3>
+    {% if kind == 'project' or kind == 'post' or kind == 'research_project' %}<p>{{ item.summary }}</p>{% elif kind == 'academic_work' or kind == 'scientific_output' %}<p>{{ item.abstract }}</p>{% else %}<p>{{ item.description }}</p>{% endif %}
+    <div class="card-meta">{% if item.unit %}<span class="tag">{{ item.unit.acronym }}</span>{% endif %}{% if item.category %}<span class="tag">{{ item.category.name }}</span>{% endif %}{% if item.year %}<span class="tag">{{ item.year }}</span>{% endif %}</div>
+    {% if item.startup_profile %}<p><strong>Foco:</strong> {{ item.startup_profile.focus_area }}{% if item.startup_profile.species_or_subject %} · {{ item.startup_profile.species_or_subject }}{% endif %}</p>{% endif %}
+    <div class="card-actions">{% if kind == 'project' %}<a href="{% url 'project-detail' item.slug %}" class="btn btn-secondary">Detalhes</a>{% elif kind == 'post' %}<a href="{% url 'news-detail' item.slug %}" class="btn btn-secondary">Leia mais</a>{% endif %}</div>
+  </div>
+</article>
+{% empty %}<p class="empty-state">Nenhum conteúdo público encontrado.</p>{% endfor %}

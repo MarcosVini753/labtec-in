@@ -36,11 +36,14 @@ GET /api/v1/transparency-documents/
 GET /api/v1/partners/
 GET /api/v1/metrics/impact/
 POST /api/v1/contact/
+GET /api/v1/search/?q=termo&type=&unit=
 ```
 
 Não existem endpoints de tags de notícia, eventos, trilhas, MediaHub, memberships ou snapshots de métricas.
 
 `institutional-units` lista todas as unidades cadastradas. Unidades são sempre públicas e o payload não possui `is_active` ou `is_public`; a unidade pai é resumida sempre que existir.
+
+Projetos classificados como `startup` podem conter `startup_profile` com `focus_area`, `species_or_subject` e `institution`. Startups continuam sendo projetos; não existe endpoint independente. A busca global retorna `{count, results}` com `type`, `title`, `slug`, `summary`, `unit` e `url`, somente para registros públicos.
 
 ## Publicação
 

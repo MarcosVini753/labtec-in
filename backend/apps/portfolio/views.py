@@ -30,6 +30,7 @@ class ProjectViewSet(PublicReadOnlyModelViewSet):
         "team_members__person",
         "results",
         "links",
+        "startup_profile",
     )
     serializer_class = ProjectSerializer
     search_fields = ("title", "summary", "area", "problem", "solution")

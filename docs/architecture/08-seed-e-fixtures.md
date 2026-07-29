@@ -19,9 +19,10 @@ Ele cria ou atualiza dados canônicos sem duplicação e sem criar usuários adm
 ## Conteúdo inicial
 
 - LABTEC.IN como unidade raiz e LATEC como filha.
-- 33 pessoas e 43 memberships institucionais.
+- 36 pessoas e 43 memberships institucionais.
 - Sete eixos da LATEC e nove mentorias.
-- Projetos de portfólio práticos, equipes e resultados.
+- Projetos de portfólio práticos, três startups, perfis de startup, equipes e resultados.
+- Farma Amazônia, Remédio Vivo e Amazon Green Line com os metadados explícitos das placas institucionais.
 - A pesquisa formal “Pesquisa de Bioativos da Amazônia” publicada.
 - Duas notícias e dois cursos, além dos materiais iniciais.
 - Seis métricas vinculadas ao LABTEC.IN.
