@@ -52,8 +52,8 @@ class EdgeCaseSeedTests(TestCase):
             InstitutionMembership.objects.filter(person__slug="pessoa-multiplos-vinculos-teste").count(),
             3,
         )
-        self.assertEqual(get_user_model().objects.filter(username__startswith="edge-").count(), 5)
-        self.assertEqual(Profile.objects.filter(user__username__startswith="edge-").count(), 4)
+        self.assertEqual(get_user_model().objects.filter(username__startswith="edge-").count(), 6)
+        self.assertEqual(Profile.objects.filter(user__username__startswith="edge-").count(), 5)
 
     def test_edge_hierarchy_and_membership_visibility_are_present(self):
         nucleus = InstitutionalUnit.objects.get(slug="nucleo-latec-teste")
@@ -98,9 +98,12 @@ class EdgeCaseSeedTests(TestCase):
     def test_admin_edge_users_have_expected_scope(self):
         User = get_user_model()
         lab_user = User.objects.get(username="edge-lab-coordinator")
+        mentor_user = User.objects.get(username="edge-mentor")
         inactive_user = User.objects.get(username="edge-inactive-admin")
 
         self.assertTrue(lab_user.check_password("edge-test-password"))
         self.assertEqual(lab_user.profile.role, Profile.AdminRole.LAB_COORDINATOR)
+        self.assertEqual(mentor_user.profile.role, Profile.AdminRole.MENTOR)
+        self.assertTrue(mentor_user.profile.mentor_axis_ids())
         self.assertFalse(inactive_user.is_active)
         self.assertFalse(inactive_user.profile.is_active_admin)

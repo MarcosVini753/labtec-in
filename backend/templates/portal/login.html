@@ -2,13 +2,13 @@
 {% block title %}Entrar · LABTEC.IN{% endblock %}
 {% block content %}
 <section class="page-section compact">
-  <div class="container form-shell">
+  <div class="container form-shell login-shell">
     <div class="section-heading">
       <p class="section-kicker">Acesso administrativo</p>
       <h1 class="section-title">Entrar</h1>
       <p class="section-lead">Acesse o painel editorial do portal do LABTEC.IN e LATEC.</p>
     </div>
-    <form class="form-card" method="post">
+    <form class="form-card login-form" method="post">
       {% csrf_token %}
       <div class="form-grid">
         <div class="form-field">

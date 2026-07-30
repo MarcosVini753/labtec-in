@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
 from apps.accounts.models import Profile
+from apps.axes.models import AxisMentorship, ResearchAxis
 from apps.common.models import EditorialStatus
 from apps.core.models import SocialLink
 from apps.institutional.models import InstitutionMembership, InstitutionalUnit
@@ -240,6 +241,7 @@ class Command(BaseCommand):
         specs = (
             ("edge-lab-coordinator", Profile.AdminRole.LAB_COORDINATOR, self.labtec, self.people["pessoa-multiplos-vinculos-teste"], True, (self.labtec,)),
             ("edge-unit-coordinator", Profile.AdminRole.UNIT_COORDINATOR, self.latec, None, False, (self.latec,)),
+            ("edge-mentor", Profile.AdminRole.MENTOR, self.latec, self.people["pessoa-sem-vinculo-teste"], False, (self.latec,)),
             ("edge-inactive-admin", Profile.AdminRole.UNIT_COORDINATOR, self.latec, None, False, (self.latec,)),
             ("edge-wrong-lab-coordinator", Profile.AdminRole.LAB_COORDINATOR, self.latec, None, False, (self.latec,)),
         )
@@ -259,6 +261,14 @@ class Command(BaseCommand):
             profile.is_active_admin = username != "edge-inactive-admin"
             profile.save()
             profile.authorized_units.set(authorized_units)
+            if role == Profile.AdminRole.MENTOR and person:
+                axis = ResearchAxis.objects.filter(unit=self.latec, number=1).first()
+                if axis:
+                    AxisMentorship.objects.update_or_create(
+                        axis=axis,
+                        person=person,
+                        defaults={"role": "Orientador", "is_main_mentor": True, "display_order": 90},
+                    )
 
         user = User.objects.get_or_create(username="edge-no-profile", defaults={"email": "edge-no-profile@example.com"})[0]
         user.email = "edge-no-profile@example.com"

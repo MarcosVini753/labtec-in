@@ -854,6 +854,10 @@ textarea:focus-visible {
   max-width: 860px;
 }
 
+.login-shell {
+  max-width: 560px;
+}
+
 .form-card {
   background: var(--color-white);
   border: 1px solid rgba(212, 216, 206, 0.95);
@@ -866,6 +870,15 @@ textarea:focus-visible {
   display: grid;
   gap: 20px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.login-form .form-grid {
+  grid-template-columns: 1fr;
+}
+
+.login-form .btn {
+  margin-top: 20px;
+  width: 100%;
 }
 
 .form-field {

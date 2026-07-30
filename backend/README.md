@@ -140,6 +140,7 @@ O seed copia os ativos versionados em `backend/seed_assets/` para o volume de m�
 |---|---|
 | `edge-lab-coordinator` | Coordenação LABTEC.IN |
 | `edge-unit-coordinator` | Coordenação LATEC |
+| `edge-mentor` | Orientador da LATEC (eixo 1) |
 | `edge-inactive-admin` | Usuário administrativo inativo |
 | `edge-wrong-lab-coordinator` | Perfil LABTEC inválido |
 | `edge-no-profile` | Usuário sem Profile |
@@ -209,6 +210,7 @@ A tela de login está em: `http://127.0.0.1:8000/entrar/`
 |---|---|---|
 | `edge-lab-coordinator` | Coordenação LABTEC.IN | Acessa tudo, publica e edita |
 | `edge-unit-coordinator` | Coordenação LATEC | Cria/edita rascunhos, não publica |
+| `edge-mentor` | Orientador da LATEC | Cria/edita rascunhos nos próprios eixos, não publica |
 | `edge-no-profile` | Sem Profile | `is_staff=True`, mas não usa admin efetivamente |
 | `edge-inactive-admin` | Inativo | Acesso recusado |
 
