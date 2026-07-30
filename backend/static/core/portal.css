@@ -754,6 +754,10 @@ textarea:focus-visible {
   margin-right: auto;
 }
 
+.content-panel.prose.wide-panel {
+  max-width: none;
+}
+
 .prose p,
 .prose li {
   color: rgba(5, 22, 18, 0.78);
@@ -772,6 +776,20 @@ textarea:focus-visible {
   gap: 12px;
   justify-content: space-between;
   margin-bottom: 24px;
+}
+
+.catalog-search {
+  align-items: end;
+  display: grid;
+  flex: 1 0 100%;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  width: 100%;
+}
+
+.catalog-search label {
+  grid-column: 1 / -1;
+  margin: 0;
 }
 
 .filter-chips {
@@ -1231,6 +1249,10 @@ textarea:focus {
   .preview-item {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .catalog-search {
+    grid-template-columns: 1fr;
   }
 
   .filter-chip,

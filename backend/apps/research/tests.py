@@ -343,7 +343,7 @@ class ResearchAdminScopeTests(TestCase):
         cls.person = Person.objects.create(full_name="Pessoa do Admin", slug="pessoa-do-admin")
         cls.mentor_person = Person.objects.create(full_name="Mentora do Admin", slug="mentora-do-admin")
         InstitutionMembership.objects.create(person=cls.person, unit=cls.latec, role="Pesquisador")
-        InstitutionMembership.objects.create(person=cls.mentor_person, unit=cls.latec, role="Mentor")
+        InstitutionMembership.objects.create(person=cls.mentor_person, unit=cls.latec, role="Orientador")
         cls.axis.mentorships.create(person=cls.mentor_person)
         cls.coordinator_user = get_user_model().objects.create_user("unit_coordinator", is_staff=True)
         Profile.objects.create(

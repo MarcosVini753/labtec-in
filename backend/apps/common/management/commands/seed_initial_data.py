@@ -294,7 +294,7 @@ class Command(BaseCommand):
                 "acronym": "LATEC",
                 "unit_type": InstitutionalUnit.UnitType.ACADEMIC_LEAGUE,
                 "parent": self.labtec_unit,
-                "description": "Liga acadêmica vinculada ao LABTEC.IN.",
+                "description": "A LATEC é a Liga Acadêmica de Biotecnologia, Biodiversidade e Inovação da UFAC. Vinculada ao LABTEC.IN, reúne estudantes e docentes de diferentes áreas para desenvolver atividades de ensino, pesquisa e extensão voltadas à valorização da biodiversidade amazônica, à formação científica e à criação de produtos, processos e soluções inovadoras com impacto social e regional.",
                 "display_order": 2,
             },
         )

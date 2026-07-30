@@ -94,7 +94,7 @@ class Command(BaseCommand):
 
         memberships = (
             ("pessoa-multiplos-vinculos-teste", self.labtec, "Pesquisador", {}),
-            ("pessoa-multiplos-vinculos-teste", self.latec, "Mentor", {}),
+            ("pessoa-multiplos-vinculos-teste", self.latec, "Orientador", {}),
             ("pessoa-multiplos-vinculos-teste", self.external_unit, "Colaborador externo", {"is_active": False, "is_public": False, "end_date": date(2025, 12, 31)}),
             ("pessoa-vinculo-inativo-teste", self.latec, "Vínculo encerrado", {"is_active": False, "is_public": False, "start_date": date(2024, 1, 1), "end_date": date(2025, 12, 31)}),
             ("pessoa-vinculo-futuro-teste", self.latec, "Vínculo futuro", {"start_date": date(2099, 1, 1)}),

@@ -55,7 +55,7 @@ class InstitutionalAdminPermissionTests(TestCase):
 
         cls.mentor_person = Person.objects.create(full_name="Mentora", slug="mentora")
         cls.member = Person.objects.create(full_name="Integrante", slug="integrante")
-        InstitutionMembership.objects.create(person=cls.mentor_person, unit=cls.latec, role="Mentor")
+        InstitutionMembership.objects.create(person=cls.mentor_person, unit=cls.latec, role="Orientador")
         InstitutionMembership.objects.create(person=cls.member, unit=cls.latec, role="Integrante")
         cls.mentor_axis = ResearchAxis.objects.create(
             unit=cls.latec,
