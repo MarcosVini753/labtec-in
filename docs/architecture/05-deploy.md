@@ -84,7 +84,20 @@ A produção deve possuir política mínima de backup para:
 
 ## Migração institucional
 
-Os apps `institutional` e `research` não exigem novos containers. Antes do corte, a implantação deve fazer backup e executar os preflights de unidade, workflow, autoria e papéis públicos. Depois, aplica as migrations incrementais, executa o seed idempotente duas vezes e valida API e OpenAPI. As migrations removem estruturas e dados legados e não possuem reversão integral.
+Os apps `institutional` e `research` não exigem novos containers. Antes do corte, a implantação deve fazer backup e executar os preflights de unidade, workflow, autoria e papéis públicos. As migrations removem estruturas e dados legados e não possuem reversão integral.
+
+Em uma instalação institucional nova, o operador deve configurar PostgreSQL, um `MEDIA_ROOT` vazio em volume persistente e as variáveis de produção. Depois, executa:
+
+```bash
+python manage.py migrate
+python manage.py seed_initial_data
+python manage.py collectstatic --noinput
+python manage.py createsuperuser
+```
+
+`seed_initial_data` valida os ativos em `backend/seed_assets/`, cria o conteúdo canônico uma única vez e copia suas imagens e anexos para o volume de mídia. Ele falha quando a base já contém a unidade `labtec-in`; em deploys seguintes, execute somente migrations, coleta de estáticos e reinício da aplicação. O Django Admin passa a ser a fonte de verdade para alterações editoriais.
+
+O seed não cria credenciais nem dados de borda. `seed_edge_case_data` é exclusivo de desenvolvimento e homologação. O backup do PostgreSQL e do volume de mídia deve ocorrer no mesmo procedimento para manter referências de `ImageField` e arquivos consistentes.
 
 O app `mediahub`, sua tabela, ContentType e permissões foram removidos. Arquivos permanecem no volume compartilhado e são relacionados diretamente pelos modelos de domínio.
 

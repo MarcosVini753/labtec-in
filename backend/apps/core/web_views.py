@@ -173,7 +173,7 @@ def news(request):
 
 
 def news_detail(request, slug):
-    item = get_object_or_404(_published(Post).select_related("unit"), slug=slug)
+    item = get_object_or_404(_published(Post).select_related("unit").prefetch_related("links"), slug=slug)
     return render(request, "portal/detail.html", {"page_title": item.title, "item": item, "kind": "post"})
 
 

@@ -1,8 +1,13 @@
 from django.contrib import admin
 
 from apps.common.admin_actions import EDITORIAL_ADMIN_ACTIONS
-from apps.common.admin_scoping import UnitScopedAdminMixin
-from apps.news.models import Post
+from apps.common.admin_scoping import UnitScopedAdminMixin, UnitScopedInlineMixin
+from apps.news.models import Post, PostLink
+
+
+class PostLinkInline(UnitScopedInlineMixin, admin.TabularInline):
+    model = PostLink
+    extra = 0
 
 
 @admin.register(Post)
@@ -17,6 +22,17 @@ class PostAdmin(UnitScopedAdminMixin, admin.ModelAdmin):
     actions = EDITORIAL_ADMIN_ACTIONS
     fieldsets = (
         ("Identificação", {"fields": ("unit", "title", "slug", "axis")}),
-        ("Conteúdo", {"fields": ("summary", "content", "cover_image")}),
+        ("Conteúdo", {"fields": ("summary", "content", "cover_image", "body_image")}),
         ("Publicação", {"fields": ("editorial_status", "published_at", "include_in_parent_ecosystem")}),
     )
+    inlines = (PostLinkInline,)
+
+
+@admin.register(PostLink)
+class PostLinkAdmin(UnitScopedAdminMixin, admin.ModelAdmin):
+    unit_lookup = "post__unit"
+    axis_lookup = "post__axis"
+    publication_lookup = "post"
+    list_display = ("label", "post", "display_order")
+    search_fields = ("label", "url", "post__title")
+    autocomplete_fields = ("post",)

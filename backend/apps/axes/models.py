@@ -29,7 +29,7 @@ class ResearchAxis(BaseModel):
 class AxisMentorship(BaseModel):
     axis = models.ForeignKey(ResearchAxis, on_delete=models.CASCADE, related_name="mentorships")
     person = models.ForeignKey("people.Person", on_delete=models.CASCADE, related_name="axis_mentorships")
-    role = models.CharField(max_length=120, default="Mentor")
+    role = models.CharField(max_length=120, default="Orientador")
     is_main_mentor = models.BooleanField(default=False)
     display_order = models.PositiveIntegerField(default=0)
 

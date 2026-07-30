@@ -1,6 +1,6 @@
-# Seed e fixtures do portal LABTEC.IN
+# Bootstrap e fixtures do portal LABTEC.IN
 
-O comando idempotente é:
+O bootstrap canônico de uma base vazia é:
 
 ```txt
 python manage.py seed_initial_data
@@ -14,7 +14,7 @@ python manage.py seed_edge_case_data --password senha-de-teste
 
 Esse comando é idempotente e cria casos de teste para hierarquia, vínculos institucionais, workflow editorial, parceiros, mensagens, links sociais, snapshots de métricas e perfis administrativos. Unidades institucionais continuam públicas por decisão de domínio; os casos de visibilidade são representados por vínculos e estados editoriais.
 
-Ele cria ou atualiza dados canônicos sem duplicação e sem criar usuários administrativos ou credenciais.
+`seed_initial_data` só pode ser executado antes de existir a unidade `labtec-in`. Ele valida os arquivos versionados em `backend/seed_assets/`, cria o conteúdo canônico e copia cada arquivo para o `MEDIA_ROOT`. Depois do bootstrap, o conteúdo é administrado exclusivamente pelo Django Admin; uma nova execução do comando falha sem alterar dados.
 
 ## Conteúdo inicial
 
@@ -24,7 +24,7 @@ Ele cria ou atualiza dados canônicos sem duplicação e sem criar usuários adm
 - Projetos de portfólio práticos, três startups, perfis de startup, equipes e resultados.
 - Farma Amazônia, Remédio Vivo e Amazon Green Line com os metadados explícitos das placas institucionais.
 - A pesquisa formal “Pesquisa de Bioativos da Amazônia” publicada.
-- Duas notícias e dois cursos, além dos materiais iniciais.
+- Quatro notícias: três do LABTEC.IN e a notícia de congresso da LATEC; dois cursos e a apostila institucional de nanotecnologia.
 - Seis métricas vinculadas ao LABTEC.IN.
 - Configuração do site, hero e seções institucionais.
 
@@ -41,7 +41,9 @@ Unidades são criadas sem flags de ativação ou visibilidade, pois todo registr
 | Ligantes | membership na LATEC |
 | Pesquisadores e professores | membership no LABTEC.IN |
 | Coordenação | memberships no LABTEC.IN e na LATEC |
-| Notícias e cursos da Liga | LATEC |
+| Cursos da Liga | LATEC |
+| Notícias de premiação e estágio | LABTEC.IN |
+| Notícia do congresso | LATEC |
 | Pesquisa de Bioativos | LATEC |
 | Produção científica e transparência gerais | LABTEC.IN |
 
@@ -54,9 +56,9 @@ Os 43 vínculos incluem:
 - ligantes na LATEC;
 - professores, pesquisadores e estagiários aplicáveis no LABTEC.IN;
 - coordenação no LABTEC.IN e na LATEC;
-- nove memberships `Mentor` na LATEC.
+- nove vínculos `Orientador` na LATEC.
 
-A chave estável é `(person, unit, role)`, portanto a mesma pessoa pode possuir `Coordenadora` e `Mentor` na LATEC.
+A chave estável é `(person, unit, role)`, portanto a mesma pessoa pode possuir `Coordenadora` e `Orientador` na LATEC.
 
 ## Pesquisa de Bioativos
 
@@ -64,16 +66,15 @@ A chave estável é `(person, unit, role)`, portanto a mesma pessoa pode possuir
 
 O comando não infere metodologia, instituição, datas ou autoria que não estejam nos dados canônicos.
 
-## Idempotência
+## Regra de bootstrap
 
-- Usar `slug`, `key` ou combinação única como chave estável.
-- Criar unidades antes de memberships e conteúdos.
-- Criar pessoas antes de equipes, contribuições e autorias.
-- Criar eixos antes de mentorias.
-- Não apagar registros editoriais criados manualmente.
-- Não elevar novamente um registro que a coordenação arquivou depois do seed.
+- Execute uma vez para cada banco vazio, depois de `migrate`.
+- Não execute em deploys posteriores; aplique alterações pelo Django Admin.
+- Arquivos de pessoas, notícias e cursos pertencem a `backend/seed_assets/`; o volume configurado em `MEDIA_ROOT` guarda a cópia permanente publicada.
+- Um arquivo canônico ausente impede o bootstrap antes de qualquer registro ser criado.
+- Para reconstruir desenvolvimento ou homologação, descarte o banco e a mídia de teste antes de executar o bootstrap novamente.
 
-Dois ciclos consecutivos devem manter as mesmas 43 memberships, nove mentorias e seis métricas.
+O conteúdo herdado do protótipo permanece publicado por decisão editorial. A veracidade e atualização desses dados são responsabilidade da equipe editorial antes e depois da implantação.
 
 ## Textos e identificadores atuais
 

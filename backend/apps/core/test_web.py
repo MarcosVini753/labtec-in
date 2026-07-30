@@ -36,20 +36,62 @@ class PortalWebTests(TestCase):
                 self.assertEqual(self.client.get(path).status_code, 200)
         home = self.client.get("/")
         self.assertContains(home, "people/marta.png")
-        self.assertContains(home, "Docentes e mentores")
+        self.assertContains(home, "Equipe")
         self.assertNotContains(home, ">Todos<")
         self.assertNotContains(home, ">Ligantes<")
         self.assertContains(self.client.get("/portfolio/projetos/farma-amazonia/"), "Astrocaryum ulei")
+
+    def test_startup_detail_renders_compact_profile_and_empty_field(self):
+        response = self.client.get("/portfolio/projetos/remedio-vivo/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="startup-profile"')
+        self.assertContains(response, 'class="startup-profile-item"', count=3)
+        self.assertContains(response, "Área/foco")
+        self.assertContains(response, "Microverdes &amp; Nutracêuticos")
+        self.assertContains(response, "Espécie/objeto")
+        self.assertContains(response, 'class="is-empty">Não informado</dd>')
+        self.assertContains(response, "Instituição")
+        self.assertContains(response, "UFAC/LABTEC.IN")
 
     def test_home_highlights_published_content_from_the_ecosystem(self):
         home = self.client.get("/")
         latec = self.client.get("/unidades/latec/")
         self.assertContains(home, "Farma Amazônia")
-        self.assertContains(home, "Coordenadora da LATEC é premiada por inovação tecnológica")
+        self.assertContains(home, "Coordenadora da LABTEC.IN é premiada por inovação tecnológica")
         self.assertNotContains(home, 'data-profile-role="ligante"')
         self.assertNotContains(home, '<span class="tag">Ligante</span>')
         self.assertContains(latec, "Farma Amazônia")
         self.assertContains(latec, "Ligante")
+
+    def test_award_news_renders_seeded_images_and_labeled_external_link(self):
+        marta = self.client.get("/noticias/coordenadora-da-latec-e-premiada-por-inovacao-tecnologica/")
+        bruna = self.client.get("/noticias/professora-do-labtec-in-e-homenageada-por-trajetoria-na-nutricao/")
+
+        self.assertEqual(marta.status_code, 200)
+        self.assertContains(marta, "Coordenadora da LABTEC.IN é premiada por inovação tecnológica")
+        self.assertContains(marta, "premioMarta.png")
+        self.assertContains(marta, "certificado.png")
+        self.assertContains(
+            marta,
+            'href="https://cbae.ufrj.br/2026/05/25/5-congresso-brasileiro-de-educacao-empreendedora-sustentabilidade-e-inovacao/"',
+        )
+        self.assertContains(
+            marta,
+            ">5ª edição dos Congressos Brasileiro e Internacional de Educação Empreendedora, Sustentabilidade e Inovação</a>",
+        )
+        self.assertEqual(bruna.status_code, 200)
+        self.assertContains(bruna, "Professora do LABTEC.IN recebe o título de Dama Comendadora por trajetória acadêmica em nutrição")
+        self.assertContains(bruna, "premioBruna.png")
+
+    def test_gabriel_news_is_public_and_uses_labeled_links(self):
+        response = self.client.get("/noticias/estagiario-do-labtec-in-participara-de-forum-sobre-internet-no-quenia/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Estagiário do LABTEC.IN participará de fórum sobre internet no Quênia")
+        self.assertContains(response, "gabriel.png")
+        self.assertContains(response, 'href="https://intgovforum.org/en/dashboard/igf-2026"')
+        self.assertContains(response, ">21ª reunião anual do Fórum de Governança da Internet</a>")
 
     def test_global_search_filters_unpublished_content_and_unit(self):
         Project.objects.create(

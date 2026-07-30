@@ -3,10 +3,11 @@ from types import SimpleNamespace
 
 from django.apps import apps as django_apps
 from django.db import connection
+from django.template import Context, Template
 from django.test import TestCase
 
 from apps.institutional.models import InstitutionalUnit
-from apps.news.models import Post
+from apps.news.models import Post, PostLink
 
 
 SLUG_MIGRATION = importlib.import_module(
@@ -71,3 +72,30 @@ class PostSlugMigrationTests(TestCase):
 
         source_post.refresh_from_db()
         self.assertEqual(source_post.slug, source)
+
+
+class PostContentTemplateTagTests(TestCase):
+    def test_escapes_editorial_html_and_links_registered_labels(self):
+        unit = InstitutionalUnit.objects.create(
+            name="LABTEC.IN",
+            acronym="LABTEC.IN",
+            slug="labtec-in-post-content",
+            unit_type=InstitutionalUnit.UnitType.LABORATORY,
+        )
+        post = Post.objects.create(
+            unit=unit,
+            title="Notícia",
+            slug="noticia-com-link",
+            content="<script>alert('xss')</script> Congresso externo",
+        )
+        PostLink.objects.create(
+            post=post,
+            label="Congresso externo",
+            url="https://example.com/congresso",
+        )
+
+        rendered = Template("{% load news_content %}{{ post|post_content }}").render(Context({"post": post}))
+
+        self.assertIn("&lt;script&gt;", rendered)
+        self.assertNotIn("<script>", rendered)
+        self.assertIn('href="https://example.com/congresso"', rendered)

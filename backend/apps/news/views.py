@@ -19,6 +19,7 @@ from apps.news.serializers import PostSerializer
 class PostViewSet(PublicReadOnlyModelViewSet):
     queryset = Post.objects.select_related("unit", "axis__unit").prefetch_related(
         "axis__mentorships__person",
+        "links",
     )
     serializer_class = PostSerializer
     search_fields = ("title", "summary", "content")

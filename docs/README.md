@@ -16,7 +16,7 @@ O backend Django implementa:
 - inclusão opcional de conteúdo de uma filha no ecossistema da mãe;
 - pesquisas, trabalhos acadêmicos, produção científica e portfólio como domínios distintos;
 - API pública versionada em `/api/v1/`;
-- seed idempotente com 43 memberships, sete eixos da LATEC e a pesquisa de Bioativos publicada.
+- bootstrap canônico único com 43 memberships, sete eixos da LATEC e a pesquisa de Bioativos publicada.
 
 Materiais de curso não possuem visibilidade independente: quando o curso está publicado, todos os seus materiais são públicos.
 
