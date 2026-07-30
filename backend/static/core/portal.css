@@ -40,6 +40,156 @@ body {
   overflow-x: hidden;
 }
 
+.falling-leaves {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 500;
+}
+
+.falling-leaf {
+  position: absolute;
+  top: -8vh;
+  width: 18px;
+  height: 28px;
+  background: linear-gradient(180deg, var(--Color-fresh-green, var(--color-fresh-green)) 0%, var(--color-leaf-dark) 100%);
+  clip-path: polygon(50% 0%, 78% 18%, 88% 44%, 72% 78%, 50% 100%, 28% 78%, 12% 44%, 22% 18%);
+  border-radius: 40% 40% 48% 48%;
+  opacity: 0.95;
+  filter: drop-shadow(0 10px 20px rgba(22, 45, 18, 0.14));
+  transform-origin: center;
+  animation: leaf-fall var(--fall-duration, 14s) linear infinite var(--fall-delay, 0s);
+}
+
+.falling-leaf::before,
+.falling-leaf::after {
+  content: "";
+  position: absolute;
+}
+
+.falling-leaf::before {
+  inset: 14% 44% 14% 44%;
+  background: rgba(255, 255, 255, 0.17);
+  border-radius: 999px;
+  transform: rotate(12deg);
+}
+
+.falling-leaf::after {
+  bottom: -4px;
+  left: 50%;
+  width: 2px;
+  height: 22px;
+  background: rgba(58, 42, 18, 0.9);
+  border-radius: 999px;
+  transform: translateX(-50%) rotate(14deg);
+}
+
+.falling-leaf:nth-child(1) {
+  left: 6%;
+  --fall-duration: 14s;
+  --fall-delay: 0s;
+  transform: rotate(-25deg) scale(0.9);
+}
+
+.falling-leaf:nth-child(2) {
+  left: 18%;
+  --fall-duration: 16s;
+  --fall-delay: 2s;
+  transform: rotate(15deg) scale(0.8);
+}
+
+.falling-leaf:nth-child(3) {
+  left: 32%;
+  --fall-duration: 12s;
+  --fall-delay: 1.3s;
+  transform: rotate(-10deg) scale(1);
+}
+
+.falling-leaf:nth-child(4) {
+  left: 46%;
+  --fall-duration: 18s;
+  --fall-delay: 3.4s;
+  transform: rotate(5deg) scale(0.85);
+}
+
+.falling-leaf:nth-child(5) {
+  left: 58%;
+  --fall-duration: 15s;
+  --fall-delay: 4.1s;
+  transform: rotate(-18deg) scale(0.95);
+}
+
+.falling-leaf:nth-child(6) {
+  left: 69%;
+  --fall-duration: 17s;
+  --fall-delay: 1.8s;
+  transform: rotate(22deg) scale(0.82);
+}
+
+.falling-leaf:nth-child(7) {
+  left: 82%;
+  --fall-duration: 13.5s;
+  --fall-delay: 2.7s;
+  transform: rotate(-20deg) scale(0.88);
+}
+
+.falling-leaf:nth-child(8) {
+  left: 14%;
+  --fall-duration: 19s;
+  --fall-delay: 5.3s;
+  transform: rotate(30deg) scale(0.78);
+}
+
+.falling-leaf:nth-child(9) {
+  left: 28%;
+  --fall-duration: 16.5s;
+  --fall-delay: 0.9s;
+  transform: rotate(12deg) scale(0.92);
+}
+
+.falling-leaf:nth-child(10) {
+  left: 52%;
+  --fall-duration: 14.5s;
+  --fall-delay: 3.1s;
+  transform: rotate(-35deg) scale(0.76);
+}
+
+.falling-leaf:nth-child(11) {
+  left: 70%;
+  --fall-duration: 18.5s;
+  --fall-delay: 4.8s;
+  transform: rotate(20deg) scale(0.84);
+}
+
+.falling-leaf:nth-child(12) {
+  left: 88%;
+  --fall-duration: 15.7s;
+  --fall-delay: 2.2s;
+  transform: rotate(-12deg) scale(0.9);
+}
+
+@keyframes leaf-fall {
+  0% {
+    transform: translate3d(0, -12vh, 0) rotate(0deg) scale(1);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  50% {
+    transform: translate3d(calc(var(--drift, 25vw) * 1), 55vh, 0) rotate(120deg) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate3d(calc(var(--drift, -18vw) * -1), 120vh, 0) rotate(200deg) scale(1);
+    opacity: 0;
+  }
+}
+
 img {
   max-width: 100%;
   display: block;
