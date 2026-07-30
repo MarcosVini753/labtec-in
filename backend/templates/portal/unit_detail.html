@@ -1,10 +1,12 @@
 {% extends 'portal/base.html' %}
+{% load static %}
 {% block title %}{{ unit.name }} · LABTEC.IN{% endblock %}
 {% block content %}
 <section class="hero hero-unit">
   <div class="container hero-grid">
     <div>
       <p class="section-kicker">Unidade institucional</p>
+      <img src="{% static 'core/pics/logonobg.png' %}" alt="{{ unit.name }}" class="unit-logo">
       <h1>{{ unit.acronym }}</h1>
       <p>{{ unit.description }}</p>
       <div class="hero-actions">
@@ -45,7 +47,20 @@
 <section class="page-section compact">
   <div class="container">
     <div class="section-heading"><p class="section-kicker">Pessoas da unidade</p><h2 class="section-title">Equipe</h2></div>
-    {% include 'portal/partials/person_cards.html' with people=people %}
+    <div class="profile-strip">
+      {% if people %}
+        <div class="profile-strip-track">
+          {% for person in people %}{% if forloop.counter|divisibleby:2 %}{% with membership=person.public_unit_memberships|first %}<a href="{% url 'about' %}" class="avatar" title="{{ person.full_name }} · {{ membership.role|default:'Equipe' }}">{% if person.photo %}<img src="{{ person.photo.url }}" alt="Foto de {{ person.full_name }}">{% else %}<span aria-hidden="true">{{ person.full_name|first }}</span>{% endif %}</a>{% endwith %}{% endif %}{% endfor %}
+          {% for person in people %}{% if forloop.counter|divisibleby:2 %}{% with membership=person.public_unit_memberships|first %}<a href="{% url 'about' %}" class="avatar" aria-hidden="true" tabindex="-1" title="{{ person.full_name }} · {{ membership.role|default:'Equipe' }}">{% if person.photo %}<img src="{{ person.photo.url }}" alt="">{% else %}<span aria-hidden="true">{{ person.full_name|first }}</span>{% endif %}</a>{% endwith %}{% endif %}{% endfor %}
+        </div>
+        <div class="profile-strip-track reverse">
+          {% for person in people %}{% if not forloop.counter|divisibleby:2 %}{% with membership=person.public_unit_memberships|first %}<a href="{% url 'about' %}" class="avatar" title="{{ person.full_name }} · {{ membership.role|default:'Equipe' }}">{% if person.photo %}<img src="{{ person.photo.url }}" alt="Foto de {{ person.full_name }}">{% else %}<span aria-hidden="true">{{ person.full_name|first }}</span>{% endif %}</a>{% endwith %}{% endif %}{% endfor %}
+          {% for person in people %}{% if not forloop.counter|divisibleby:2 %}{% with membership=person.public_unit_memberships|first %}<a href="{% url 'about' %}" class="avatar" aria-hidden="true" tabindex="-1" title="{{ person.full_name }} · {{ membership.role|default:'Equipe' }}">{% if person.photo %}<img src="{{ person.photo.url }}" alt="">{% else %}<span aria-hidden="true">{{ person.full_name|first }}</span>{% endif %}</a>{% endwith %}{% endif %}{% endfor %}
+        </div>
+      {% else %}
+        <p class="empty-state">Nenhuma pessoa pública cadastrada.</p>
+      {% endif %}
+    </div>
   </div>
 </section>
 {% endblock %}

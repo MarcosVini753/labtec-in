@@ -195,13 +195,10 @@ textarea:focus-visible {
 }
 
 .hero::before {
-  background-image:
-    url('https://images.unsplash.com/photo-1535127022272-dbe7ee35cf33?w=900&q=70&auto=format&fit=crop'),
-    url('https://images.unsplash.com/photo-1526930382372-67bf22c0fce2?w=900&q=70&auto=format&fit=crop'),
-    url('https://images.unsplash.com/photo-1758206523826-a65d4cf070aa?w=900&q=70&auto=format&fit=crop');
-  background-position: 0% 0%, 100% 100%, 50% 50%;
+  background-image: url('pics/lab2.jpeg');
+  background-position: center;
   background-repeat: no-repeat;
-  background-size: 55% auto, 48% auto, 62% auto;
+  background-size: cover;
   content: '';
   filter: blur(8px) brightness(0.75);
   inset: -20px;
@@ -213,14 +210,12 @@ textarea:focus-visible {
 
 @media (max-width: 920px) {
   .hero::before {
-    background-size: 70% auto, 60% auto, 50% auto;
     opacity: 0.4;
   }
 }
 
 @media (max-width: 640px) {
   .hero::before {
-    background-size: 85% auto, 75% auto, 65% auto;
     opacity: 0.35;
     inset: -10px;
   }
@@ -236,10 +231,10 @@ textarea:focus-visible {
 }
 
 .hero h1 {
-  font-size: clamp(2.55rem, 7vw, 5.7rem);
+  font-size: clamp(2.2rem, 5.5vw, 4.2rem);
   font-weight: 900;
   letter-spacing: 0;
-  line-height: 0.92;
+  line-height: 1;
   margin: 0 0 20px;
 }
 
@@ -698,10 +693,11 @@ textarea:focus {
 
 .detail-panel img {
   border-radius: var(--radius-md);
+  display: block;
   margin: 20px 0;
-  max-height: 360px;
-  object-fit: cover;
   width: 100%;
+  height: auto;
+  object-fit: contain;
 }
 
 .site-footer {
@@ -969,3 +965,14 @@ textarea:focus {
   white-space: nowrap;
   width: 1px;
 }
+
+.unit-logo {
+  max-height: 100px;
+  width: auto;
+  margin-bottom: 1rem;
+}
+
+.composed-title span {
+  display: block;
+}
+

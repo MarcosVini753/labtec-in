@@ -5,7 +5,11 @@
   <div class="container hero-grid">
     <div>
       <p class="section-kicker">Laboratório LABTEC.IN</p>
-      <h1>Biotecnologia,<br><span class="brand-line">biodiversidade</span><br>e inovação</h1>
+      <h1 class="composed-title">
+        <span>Biotecnologia,</span>
+        <span class="brand-line">Biodiversidade</span>
+        <span>e Inovação</span>
+      </h1>
       <p>{{ hero.subtitle|default:settings.description|default:'Infraestrutura, pesquisa aplicada e parcerias para transformar a ciência amazônica em solução real.' }}</p>
       <div class="hero-actions">
         <a href="{% url 'portfolio' %}" class="btn btn-primary">Conheça os projetos</a>

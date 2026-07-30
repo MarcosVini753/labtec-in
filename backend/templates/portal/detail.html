@@ -1,4 +1,3 @@
-{% extends 'portal/base.html' %}{% block title %}{{ page_title }} · LABTEC.IN{% endblock %}
 {% extends 'portal/base.html' %}
 {% block title %}{{ page_title }} · LABTEC.IN{% endblock %}
 {% block content %}
@@ -8,8 +7,15 @@
     <article class="content-panel detail-panel prose">
       <p class="section-kicker">{% if kind == 'project' %}Projeto{% elif kind == 'research_project' %}Pesquisa{% elif kind == 'post' %}Notícia{% elif kind == 'course' %}Capacitação{% else %}Conteúdo institucional{% endif %}</p>
       <h1 class="section-title">{{ item.title }}</h1>
-      {% if kind == 'project' or kind == 'research_project' or kind == 'post' %}
+      {% if kind == 'project' or kind == 'research_project' %}
         <p>{{ item.summary }}</p>
+      {% elif kind == 'post' %}
+        {% if item.summary %}
+          <p>{{ item.summary }}</p>
+        {% endif %}
+        <div class="article-body">
+          {{ item.content|linebreaks }}
+        </div>
       {% elif kind == 'academic_work' or kind == 'scientific_output' %}
         <p>{{ item.abstract }}</p>
       {% else %}
