@@ -64,7 +64,20 @@ docs/
 - [Pesquisas e trabalhos acadêmicos](architecture/11-pesquisas-e-trabalhos-academicos.md): pesquisa, trabalho, produção e portfólio.
 - [Migração](architecture/12-migracao-labtec.md): preflights, corte dos legados e operação segura.
 
-## Direção técnica
+## Pré-requisitos e ambiente local
+
+O backend usa Python 3 + Django. Para rodar localmente, é preciso:
+
+1. Python 3 e pip instalados no sistema.
+2. Criar um ambiente virtual (para isolar as dependências do projeto):
+   - Linux/macOS: `python -m venv .venv` e depois `source .venv/bin/activate`
+   - Windows PowerShell: `python -m venv .venv` e depois `.venv\Scripts\Activate.ps1`
+3. Instalar as dependências: `pip install -r requirements/base.txt` (usar o `.venv` ativado)
+4. Configurar o `.env` a partir do `.env.example` e rodar `python manage.py migrate` para criar as tabelas.
+
+> **Nota sobre o `.venv`:** ambiente virtual isola as dependências. Ative ele toda vez que for trabalhar no projeto — senão `python` e `pip` vão usar o Python do sistema, que pode não ter as libs. O `.venv/` não deve ser versionado (já tá no `.gitignore`). Pra subir tudo de uma vez só, veja a seção "Inicializando tudo (um-passe)" no `backend/README.md`.
+
+Depois de pronto, siga para [Workflow editorial](architecture/07-workflow-editorial.md) e [API pública](architecture/03-api-publica.md).
 
 - Django e Django REST Framework.
 - Django Admin como CMS inicial.
