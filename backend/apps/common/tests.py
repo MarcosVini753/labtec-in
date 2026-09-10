@@ -4,8 +4,9 @@ import tempfile
 
 from django.apps import apps as django_apps
 from django.contrib.auth import get_user_model
+from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.management import call_command
+from django.core.management import CommandError, call_command
 from django.db import IntegrityError, connection, transaction
 from django.db.models import Count
 from django.db.models.deletion import PROTECT, ProtectedError
@@ -19,7 +20,7 @@ from apps.core.models import HeroBanner, InstitutionalSection, SiteSettings, Soc
 from apps.institutional.models import InstitutionMembership, InstitutionalUnit
 from apps.learning.models import Course, CourseMaterial
 from apps.metrics.models import ImpactMetric
-from apps.news.models import Post
+from apps.news.models import Post, PostLink
 from apps.partnerships.models import ContactMessage, Partner
 from apps.people.models import Person
 from apps.portfolio.models import Project, ProjectResult, ProjectStartupProfile, ProjectStatus, ProjectTeamMember
@@ -42,7 +43,7 @@ class CmsApiTests(TestCase):
         super().tearDownClass()
         shutil.rmtree(TEST_MEDIA_ROOT, ignore_errors=True)
 
-    def test_seed_is_idempotent_and_does_not_recreate_removed_domains(self):
+    def test_seed_rejects_a_database_that_was_already_initialized(self):
         expected_counts = {
             InstitutionalUnit: 2,
             InstitutionMembership: 43,
@@ -54,7 +55,8 @@ class CmsApiTests(TestCase):
             ProjectTeamMember: 17,
             ResearchProject: 1,
             ResearchProjectMember: 2,
-            Post: 2,
+            Post: 4,
+            PostLink: 5,
             Course: 2,
             CourseMaterial: 1,
             ImpactMetric: 6,
@@ -62,7 +64,8 @@ class CmsApiTests(TestCase):
             HeroBanner: 1,
             InstitutionalSection: 3,
         }
-        call_command("seed_initial_data", verbosity=0)
+        with self.assertRaisesMessage(CommandError, "A base já foi inicializada"):
+            call_command("seed_initial_data", verbosity=0)
         for model, expected in expected_counts.items():
             with self.subTest(model=model.__name__):
                 self.assertEqual(model.objects.count(), expected)
@@ -90,7 +93,8 @@ class CmsApiTests(TestCase):
         latec = InstitutionalUnit.objects.get(slug="latec")
         self.assertEqual(latec.parent, labtec)
         self.assertEqual(ResearchAxis.objects.filter(unit=latec).count(), 7)
-        self.assertFalse(Post.objects.exclude(unit=latec).exists())
+        self.assertEqual(Post.objects.filter(unit=labtec).count(), 3)
+        self.assertEqual(Post.objects.filter(unit=latec).count(), 1)
         self.assertFalse(Course.objects.exclude(unit=latec).exists())
         self.assertFalse(Project.objects.exclude(unit=latec).exists())
         self.assertEqual(
@@ -109,6 +113,8 @@ class CmsApiTests(TestCase):
             {
                 "coordenadora-da-latec-e-premiada-por-inovacao-tecnologica",
                 "latec-participa-do-congresso-nacional-de-inovacao",
+                "professora-do-labtec-in-e-homenageada-por-trajetoria-na-nutricao",
+                "estagiario-do-labtec-in-participara-de-forum-sobre-internet-no-quenia",
             },
         )
         self.assertEqual(
@@ -117,7 +123,7 @@ class CmsApiTests(TestCase):
         )
         self.assertFalse(ImpactMetric.objects.exclude(unit=labtec).exists())
         self.assertEqual(InstitutionMembership.objects.filter(unit=latec, role="Ligante").count(), 22)
-        self.assertEqual(InstitutionMembership.objects.filter(unit=latec, role="Mentor").count(), 9)
+        self.assertEqual(InstitutionMembership.objects.filter(unit=latec, role="Orientador").count(), 9)
         self.assertEqual(InstitutionMembership.objects.count(), 43)
         self.assertFalse(get_user_model().objects.exists())
         self.assertTrue(HeroBanner.objects.get().subtitle.startswith("Um laboratório"))
@@ -136,18 +142,34 @@ class CmsApiTests(TestCase):
         self.assertFalse(Post.objects.filter(include_in_parent_ecosystem=True).exists())
         self.assertFalse(Course.objects.filter(include_in_parent_ecosystem=True).exists())
 
-        for slug in (
-            "coordenadora-da-latec-e-premiada-por-inovacao-tecnologica",
-            "latec-participa-do-congresso-nacional-de-inovacao",
-        ):
+        for slug in Post.objects.values_list("slug", flat=True):
             self.assertEqual(self.client.get(f"/api/v1/posts/{slug}/").status_code, 200)
+        marta_response = self.client.get("/api/v1/posts/coordenadora-da-latec-e-premiada-por-inovacao-tecnologica/")
+        self.assertEqual(marta_response.json()["unit"]["slug"], "labtec-in")
+        self.assertTrue(marta_response.json()["cover_image"].endswith("premioMarta.png"))
+        self.assertTrue(marta_response.json()["body_image"].endswith("certificado.png"))
+        self.assertEqual(
+            marta_response.json()["links"],
+            [{
+                "label": "5ª edição dos Congressos Brasileiro e Internacional de Educação Empreendedora, Sustentabilidade e Inovação",
+                "url": "https://cbae.ufrj.br/2026/05/25/5-congresso-brasileiro-de-educacao-empreendedora-sustentabilidade-e-inovacao/",
+                "display_order": 1,
+            }],
+        )
+        gabriel_response = self.client.get("/api/v1/posts/estagiario-do-labtec-in-participara-de-forum-sobre-internet-no-quenia/")
+        self.assertEqual(gabriel_response.json()["unit"]["slug"], "labtec-in")
+        self.assertTrue(gabriel_response.json()["cover_image"].endswith("gabriel.png"))
+        self.assertEqual(len(gabriel_response.json()["links"]), 4)
+        material = CourseMaterial.objects.get(title="Apostila de Nanotecnologia")
+        self.assertTrue(material.file.name.endswith("Apostila_Nanotecnologia.pdf"))
+        self.assertTrue(default_storage.exists(material.file.name))
         for slug in (
             "coordenadora-do-latecin-e-premiada-por-inovacao-tecnologica",
             "latecin-participa-do-congresso-nacional-de-inovacao",
         ):
             self.assertEqual(self.client.get(f"/api/v1/posts/{slug}/").status_code, 404)
 
-    def test_seed_does_not_republish_or_reset_manual_choices(self):
+    def test_seed_rejection_preserves_manual_choices(self):
         research = ResearchProject.objects.get(slug="pesquisa-de-bioativos-da-amazonia")
         research.editorial_status = EditorialStatus.ARCHIVED
         research.include_in_parent_ecosystem = True
@@ -156,14 +178,19 @@ class CmsApiTests(TestCase):
         project.editorial_status = EditorialStatus.ARCHIVED
         project.include_in_parent_ecosystem = True
         project.save(update_fields=("editorial_status", "include_in_parent_ecosystem"))
-        post = Post.objects.order_by("pk").first()
+        post = Post.objects.get(slug="coordenadora-da-latec-e-premiada-por-inovacao-tecnologica")
         post.editorial_status = EditorialStatus.ARCHIVED
-        post.save(update_fields=("editorial_status",))
+        post.title = "Título alterado manualmente"
+        post.content = "Conteúdo alterado manualmente"
+        post.cover_image = SimpleUploadedFile("manual.png", b"arquivo-manual", content_type="image/png")
+        post.save()
+        manual_image_name = post.cover_image.name
         course = Course.objects.order_by("pk").first()
         course.editorial_status = EditorialStatus.ARCHIVED
         course.save(update_fields=("editorial_status",))
 
-        call_command("seed_initial_data", verbosity=0)
+        with self.assertRaisesMessage(CommandError, "A base já foi inicializada"):
+            call_command("seed_initial_data", verbosity=0)
 
         research.refresh_from_db()
         project.refresh_from_db()
@@ -175,6 +202,10 @@ class CmsApiTests(TestCase):
         self.assertEqual(course.editorial_status, EditorialStatus.ARCHIVED)
         self.assertTrue(research.include_in_parent_ecosystem)
         self.assertTrue(project.include_in_parent_ecosystem)
+        self.assertEqual(post.title, "Título alterado manualmente")
+        self.assertEqual(post.content, "Conteúdo alterado manualmente")
+        self.assertTrue(post.cover_image.name.endswith("manual.png"))
+        self.assertTrue(default_storage.exists(manual_image_name))
 
     def test_home_only_returns_direct_labtec_content(self):
         labtec = InstitutionalUnit.objects.get(slug="labtec-in")
@@ -594,3 +625,13 @@ class CmsApiTests(TestCase):
                 }
                 self.assertTrue(expected.issubset(parameters))
                 self.assertIn("filhas diretas", parameters["unit"]["description"])
+
+
+class SeedBootstrapValidationTests(TestCase):
+    def test_missing_canonical_asset_prevents_bootstrap(self):
+        with tempfile.TemporaryDirectory(prefix="latec-missing-seed-assets-") as seed_assets_root:
+            with override_settings(SEED_ASSETS_ROOT=seed_assets_root):
+                with self.assertRaisesMessage(CommandError, "Ativos canônicos ausentes"):
+                    call_command("seed_initial_data", verbosity=0)
+
+        self.assertFalse(InstitutionalUnit.objects.filter(slug="labtec-in").exists())

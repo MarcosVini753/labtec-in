@@ -47,6 +47,8 @@ Não existem endpoints de tags de notícia, eventos, trilhas, MediaHub, membersh
 
 Projetos classificados como `startup` podem conter `startup_profile` com `focus_area`, `species_or_subject` e `institution`. Startups continuam sendo projetos; não existe endpoint independente. A busca global retorna `{count, results}` com `type`, `title`, `slug`, `summary`, `unit` e `url`, somente para registros públicos.
 
+As respostas de `posts` incluem `cover_image`, `body_image` opcional e `links`, cada link com `label`, `url` e `display_order`.
+
 ## Publicação
 
 Projetos, pesquisas, trabalhos, produções, notícias, cursos e documentos de transparência aparecem publicamente somente quando `editorial_status=published`. `published_at` registra o momento editorial, mas não é um segundo interruptor.

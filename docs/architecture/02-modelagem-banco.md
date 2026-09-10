@@ -147,9 +147,13 @@ As categorias históricas `pesquisa` e `producao-cientifica` não existem mais. 
 
 ### `Post`
 
-Possui unidade obrigatória, eixo opcional, título, slug, resumo, conteúdo, capa, `editorial_status`, `published_at` e `include_in_parent_ecosystem`.
+Possui unidade obrigatória, eixo opcional, título, slug, resumo, conteúdo, capa, imagem complementar opcional, `editorial_status`, `published_at` e `include_in_parent_ecosystem`.
 
 Notícias não possuem categoria, tags ou autoria própria. O slug é sugerido a partir do título no Admin, permanece editável antes da publicação e não é recalculado automaticamente depois.
+
+### `PostLink`
+
+Relaciona uma notícia a um rótulo e URL externos, com ordenação. O conteúdo da notícia continua sendo texto simples; o portal só converte em link os rótulos cadastrados, sem aceitar HTML editorial livre.
 
 ## Aprendizagem
 

@@ -88,7 +88,6 @@ class Command(BaseCommand):
             for slug, name, bio in (
                 ("pessoa-sem-vinculo-teste", "Pessoa sem vínculo (teste)", "Registro sem vínculo institucional."),
                 ("pessoa-multiplos-vinculos-teste", "Pessoa com múltiplos vínculos (teste)", "Registro associado a mais de uma unidade."),
-                ("pessoa-mentor-teste", "Mentor LATEC (teste)", "Registro usado pelo perfil administrativo de mentor."),
                 ("pessoa-vinculo-inativo-teste", "Pessoa com vínculo inativo (teste)", "Registro com vínculo encerrado."),
                 ("pessoa-vinculo-futuro-teste", "Pessoa com vínculo futuro (teste)", "Registro com vínculo ainda não iniciado."),
             )
@@ -96,8 +95,7 @@ class Command(BaseCommand):
 
         memberships = (
             ("pessoa-multiplos-vinculos-teste", self.labtec, "Pesquisador", {}),
-            ("pessoa-multiplos-vinculos-teste", self.latec, "Mentor", {}),
-            ("pessoa-mentor-teste", self.latec, "Mentor", {}),
+            ("pessoa-multiplos-vinculos-teste", self.latec, "Orientador", {}),
             ("pessoa-multiplos-vinculos-teste", self.external_unit, "Colaborador externo", {"is_active": False, "is_public": False, "end_date": date(2025, 12, 31)}),
             ("pessoa-vinculo-inativo-teste", self.latec, "Vínculo encerrado", {"is_active": False, "is_public": False, "start_date": date(2024, 1, 1), "end_date": date(2025, 12, 31)}),
             ("pessoa-vinculo-futuro-teste", self.latec, "Vínculo futuro", {"start_date": date(2099, 1, 1)}),
@@ -110,17 +108,8 @@ class Command(BaseCommand):
                 defaults={"is_active": True, "is_public": True, "display_order": 90, **extra},
             )
 
-        axis = ResearchAxis.objects.filter(unit=self.latec).order_by("number").first()
-        if axis:
-            AxisMentorship.objects.update_or_create(
-                axis=axis,
-                person=self.people["pessoa-mentor-teste"],
-                defaults={"role": "Mentor", "is_main_mentor": False, "display_order": 90},
-            )
-
     def seed_editorial_content(self):
         projects = (
-            ("projeto-publicado-sem-opcionais-teste", "Projeto publicado sem opcionais (teste)", self.latec, EditorialStatus.PUBLISHED, None, False),
             ("projeto-rascunho-teste", "Projeto em rascunho (teste)", self.latec, EditorialStatus.DRAFT, None, False),
             ("projeto-em-revisao-nucleo-teste", "Projeto em revisão no núcleo (teste)", self.nucleus, EditorialStatus.IN_REVIEW, None, True),
             ("projeto-arquivado-teste", "Projeto arquivado (teste)", self.external_unit, EditorialStatus.ARCHIVED, None, False),
@@ -138,8 +127,8 @@ class Command(BaseCommand):
                 },
             )
 
+        Post.objects.filter(slug="post-publicado-teste").delete()
         for slug, title, status in (
-            ("post-publicado-teste", "Post publicado (teste)", EditorialStatus.PUBLISHED),
             ("post-rascunho-teste", "Post em rascunho (teste)", EditorialStatus.DRAFT),
             ("post-arquivado-teste", "Post arquivado (teste)", EditorialStatus.ARCHIVED),
         ):
@@ -156,7 +145,6 @@ class Command(BaseCommand):
             )
 
         for slug, title, enrollment_status, editorial_status in (
-            ("curso-publicado-sem-opcionais-teste", "Curso publicado sem opcionais (teste)", Course.EnrollmentStatus.OPEN, EditorialStatus.PUBLISHED),
             ("curso-rascunho-teste", "Curso em rascunho (teste)", Course.EnrollmentStatus.CLOSED, EditorialStatus.DRAFT),
             ("curso-concluido-teste", "Curso concluído (teste)", Course.EnrollmentStatus.COMPLETED, EditorialStatus.PUBLISHED),
         ):
@@ -253,7 +241,7 @@ class Command(BaseCommand):
         specs = (
             ("edge-lab-coordinator", Profile.AdminRole.LAB_COORDINATOR, self.labtec, self.people["pessoa-multiplos-vinculos-teste"], True, (self.labtec,)),
             ("edge-unit-coordinator", Profile.AdminRole.UNIT_COORDINATOR, self.latec, None, False, (self.latec,)),
-            ("edge-mentor", Profile.AdminRole.MENTOR, self.latec, self.people["pessoa-mentor-teste"], False, (self.latec,)),
+            ("edge-mentor", Profile.AdminRole.MENTOR, self.latec, self.people["pessoa-sem-vinculo-teste"], False, (self.latec,)),
             ("edge-inactive-admin", Profile.AdminRole.UNIT_COORDINATOR, self.latec, None, False, (self.latec,)),
             ("edge-wrong-lab-coordinator", Profile.AdminRole.LAB_COORDINATOR, self.latec, None, False, (self.latec,)),
         )
@@ -273,6 +261,14 @@ class Command(BaseCommand):
             profile.is_active_admin = username != "edge-inactive-admin"
             profile.save()
             profile.authorized_units.set(authorized_units)
+            if role == Profile.AdminRole.MENTOR and person:
+                axis = ResearchAxis.objects.filter(unit=self.latec, number=1).first()
+                if axis:
+                    AxisMentorship.objects.update_or_create(
+                        axis=axis,
+                        person=person,
+                        defaults={"role": "Orientador", "is_main_mentor": True, "display_order": 90},
+                    )
 
         user = User.objects.get_or_create(username="edge-no-profile", defaults={"email": "edge-no-profile@example.com"})[0]
         user.email = "edge-no-profile@example.com"

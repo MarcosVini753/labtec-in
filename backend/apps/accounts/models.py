@@ -8,7 +8,7 @@ class Profile(BaseModel):
     class AdminRole(models.TextChoices):
         LAB_COORDINATOR = "lab_coordinator", "Coordenação LABTEC.IN"
         UNIT_COORDINATOR = "unit_coordinator", "Coordenação de unidade"
-        MENTOR = "mentor", "Mentor/Professor"
+        MENTOR = "mentor", "Orientador/Professor"
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
     person = models.OneToOneField(

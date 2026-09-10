@@ -1,4 +1,5 @@
 {% extends 'portal/base.html' %}
+{% load news_content %}
 {% block title %}{{ page_title }} · LABTEC.IN{% endblock %}
 {% block content %}
 <section class="page-section compact">
@@ -7,6 +8,9 @@
     <article class="content-panel detail-panel prose">
       <p class="section-kicker">{% if kind == 'project' %}Projeto{% elif kind == 'research_project' %}Pesquisa{% elif kind == 'post' %}Notícia{% elif kind == 'course' %}Capacitação{% else %}Conteúdo institucional{% endif %}</p>
       <h1 class="section-title">{{ item.title }}</h1>
+      {% if kind == 'post' and item.cover_image %}
+        <img src="{{ item.cover_image.url }}" alt="{{ item.title }}" class="article-cover">
+      {% endif %}
       {% if kind == 'project' or kind == 'research_project' %}
         <p>{{ item.summary }}</p>
       {% elif kind == 'post' %}
@@ -14,28 +18,37 @@
           <p>{{ item.summary }}</p>
         {% endif %}
         <div class="article-body">
-          {{ item.content|linebreaks }}
+          {{ item|post_content }}
         </div>
       {% elif kind == 'academic_work' or kind == 'scientific_output' %}
         <p>{{ item.abstract }}</p>
       {% else %}
         <p>{{ item.description }}</p>
       {% endif %}
-      {% if item.cover_image %}
-        <img src="{{ item.cover_image.url }}" alt="">
+      {% if kind != 'post' and item.cover_image %}
+        <img src="{{ item.cover_image.url }}" alt="{{ item.title }}">
+      {% endif %}
+      {% if kind == 'post' and item.body_image %}
+        <img src="{{ item.body_image.url }}" alt="{{ item.title }}">
       {% endif %}
       {% if item.startup_profile %}
-        <div class="content-panel">
-          <h2>Perfil da startup</h2>
-          <dl>
-            <dt>Área/foco</dt>
-            <dd>{{ item.startup_profile.focus_area }}</dd>
-            <dt>Espécie/objeto</dt>
-            <dd>{{ item.startup_profile.species_or_subject|default:'Não informado' }}</dd>
-            <dt>Instituição</dt>
-            <dd>{{ item.startup_profile.institution|default:'Não informado' }}</dd>
+        <section class="startup-profile" aria-labelledby="startup-profile-title">
+          <h2 id="startup-profile-title">Perfil da startup</h2>
+          <dl class="startup-profile-grid">
+            <div class="startup-profile-item">
+              <dt>Área/foco</dt>
+              <dd>{{ item.startup_profile.focus_area }}</dd>
+            </div>
+            <div class="startup-profile-item">
+              <dt>Espécie/objeto</dt>
+              <dd{% if not item.startup_profile.species_or_subject %} class="is-empty"{% endif %}>{{ item.startup_profile.species_or_subject|default:'Não informado' }}</dd>
+            </div>
+            <div class="startup-profile-item">
+              <dt>Instituição</dt>
+              <dd{% if not item.startup_profile.institution %} class="is-empty"{% endif %}>{{ item.startup_profile.institution|default:'Não informado' }}</dd>
+            </div>
           </dl>
-        </div>
+        </section>
       {% endif %}
     </article>
   </div>

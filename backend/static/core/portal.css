@@ -281,7 +281,7 @@ textarea:focus-visible {
 
 .main-nav a {
   border-radius: 999px;
-  color: var(--color-ink);
+  color: var(--color-white);
   display: block;
   font-size: 0.95rem;
   font-weight: 650;
@@ -754,6 +754,10 @@ textarea:focus-visible {
   margin-right: auto;
 }
 
+.content-panel.prose.wide-panel {
+  max-width: none;
+}
+
 .prose p,
 .prose li {
   color: rgba(5, 22, 18, 0.78);
@@ -772,6 +776,20 @@ textarea:focus-visible {
   gap: 12px;
   justify-content: space-between;
   margin-bottom: 24px;
+}
+
+.catalog-search {
+  align-items: end;
+  display: grid;
+  flex: 1 0 100%;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  width: 100%;
+}
+
+.catalog-search label {
+  grid-column: 1 / -1;
+  margin: 0;
 }
 
 .filter-chips {
@@ -836,6 +854,10 @@ textarea:focus-visible {
   max-width: 860px;
 }
 
+.login-shell {
+  max-width: 560px;
+}
+
 .form-card {
   background: var(--color-white);
   border: 1px solid rgba(212, 216, 206, 0.95);
@@ -848,6 +870,15 @@ textarea:focus-visible {
   display: grid;
   gap: 20px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.login-form .form-grid {
+  grid-template-columns: 1fr;
+}
+
+.login-form .btn {
+  margin-top: 20px;
+  width: 100%;
 }
 
 .form-field {
@@ -1009,6 +1040,49 @@ textarea:focus {
   width: 100%;
   height: auto;
   object-fit: contain;
+}
+
+.startup-profile {
+  border-top: 1px solid rgba(42, 79, 34, 0.14);
+  margin-top: 32px;
+  padding-top: 28px;
+}
+
+.startup-profile h2 {
+  margin: 0 0 18px;
+}
+
+.startup-profile-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+
+.startup-profile-item {
+  background: linear-gradient(180deg, var(--color-white), #f9fbf5);
+  border: 1px solid rgba(212, 216, 206, 0.95);
+  border-radius: var(--radius-md);
+  padding: 18px;
+}
+
+.startup-profile-item dt {
+  color: var(--color-leaf-dark);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.startup-profile-item dd {
+  color: var(--color-deep-green);
+  font-weight: 800;
+  margin: 8px 0 0;
+}
+
+.startup-profile-item dd.is-empty {
+  color: rgba(5, 22, 18, 0.55);
+  font-weight: 600;
 }
 
 .site-footer {
@@ -1174,7 +1248,8 @@ textarea:focus {
 
   .impact-grid,
   .form-grid,
-  .footer-grid {
+  .footer-grid,
+  .startup-profile-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1187,6 +1262,10 @@ textarea:focus {
   .preview-item {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .catalog-search {
+    grid-template-columns: 1fr;
   }
 
   .filter-chip,

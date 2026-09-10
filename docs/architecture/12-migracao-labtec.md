@@ -81,7 +81,7 @@ Em banco novo, o seed cria somente a pesquisa publicada. Em banco atualizado, el
 
 1. Em desenvolvimento, teste ou homologação, descartar a base configurada e os arquivos de mídia de teste.
 2. Aplicar todas as migrations em uma base vazia.
-3. Executar `seed_initial_data` duas vezes.
+3. Executar `seed_initial_data` uma vez.
 4. Executar `check`, testes, verificação de drift e validação OpenAPI.
 5. Revisar manualmente conteúdos, autorias e arquivos publicados.
 
