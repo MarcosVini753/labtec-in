@@ -75,6 +75,4 @@ docs/
 
 O corte final corrigiu dois slugs de notícias que continham `latecin`; as URLs antigas não possuem alias nem redirecionamento. O frontend deve sempre usar o slug recebido da API.
 
-## Fora do escopo
 
-Continuam fora desta entrega o frontend, a expansão da Home, autenticação pública, inscrições completas, presença, certificados, pagamentos, agenda de eventos e reservas de laboratório ou equipamentos.
