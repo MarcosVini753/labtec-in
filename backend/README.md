@@ -37,6 +37,25 @@ No Windows PowerShell, a ativação normalmente é:
 .venv\Scripts\Activate.ps1
 ```
 
+**Sobre o ambiente virtual (`.venv`):** o `.venv/` é uma pasta que isola as dependências (bibliotecas) do projeto do Python que já existe no seu computador. É como se fosse uma "gaveta separada" só pra esse projeto. Sempre que for trabalhar aqui, ative o `.venv` primeiro — senão comandos como `python` e `pip` vão usar o Python global do seu PC, que pode não ter as libs do projeto. O `.venv/` **não deve ir pro git** (já tá no `.gitignore`); use `requirements/base.txt` pra instalar as dependências dentro dele.
+
+### Inicializando tudo (um-passe)
+
+Se quiser subir o ambiente do zero com segurança, execute essa sequência na pasta `backend/`:
+
+```bash
+python -m venv .venv          # Cria o ambiente virtual (uma vez)
+source .venv/bin/activate      # Ativa no Linux/macOS  (ou .venv\Scripts\Activate.ps1 no Windows)
+pip install -r requirements/base.txt   # Instala dependências
+cp .env.example .env           # Copia config de ambiente
+python manage.py migrate       # Cria/atualiza tabelas no banco
+python manage.py seed_initial_data    # Popula dados iniciais
+python manage.py seed_edge_case_data --password senha-de-teste   # (Opcional) dados de borda
+python manage.py runserver    # Sobe o servidor
+```
+
+Pronto! Acesse `http://127.0.0.1:8000/` e a documentação da API em `http://127.0.0.1:8000/api/docs/`.
+
 ### O que cada comando faz
 
 | Comando | O que faz |
