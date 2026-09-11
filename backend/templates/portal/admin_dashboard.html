@@ -5,7 +5,7 @@
   <h1 class="section-title">Dashboard administrativo</h1>
   <p class="section-lead">Olá, {{ request.user.get_username }}. <a href="{% url 'admin:index' %}">Abrir Django Admin</a> · <a href="{% url 'staff-logout' %}">Sair</a></p>
   <form class="form-card" hx-get="{% url 'admin-dashboard' %}" hx-target="#dashboard-counts" hx-swap="innerHTML">
-    <label>Unidade <select name="unit"><option value="">Todas</option>{% for unit in units %}<option value="{{ unit.slug }}"{% if selected_unit == unit.slug %} selected{% endif %}>{{ unit.name }}</option>{% endfor %}</select></label>
+    <label>Unidade <select name="unit"><option value="">{{ all_units_label }}</option>{% for unit in units %}<option value="{{ unit.slug }}"{% if selected_unit == unit.slug %} selected{% endif %}>{{ unit.name }}</option>{% endfor %}</select></label>
     <button class="btn btn-primary" type="submit">Filtrar</button>
   </form>
   <div id="dashboard-counts">{% include 'portal/partials/admin_dashboard_counts.html' %}</div>

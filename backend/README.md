@@ -161,7 +161,6 @@ O seed copia os ativos versionados em `backend/seed_assets/` para o volume de m�
 | `edge-unit-coordinator` | Coordenação LATEC |
 | `edge-mentor` | Orientador da LATEC (eixo 1) |
 | `edge-inactive-admin` | Usuário administrativo inativo |
-| `edge-wrong-lab-coordinator` | Perfil LABTEC inválido |
 | `edge-no-profile` | Usuário sem Profile |
 
 A senha de todos é: `senha-de-teste`

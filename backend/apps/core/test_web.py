@@ -213,6 +213,7 @@ class PortalWebTests(TestCase):
         partial = self.client.get("/admin/dashboard/?unit=latec", HTTP_HX_REQUEST="true")
         self.assertEqual(partial.status_code, 200)
         self.assertContains(partial, "published")
+        self.assertContains(partial, "Publicado")
 
         latec = InstitutionalUnit.objects.get(slug="latec")
         mentor_person = Person.objects.create(full_name="Orientadora do login", slug="orientadora-login")
@@ -227,3 +228,57 @@ class PortalWebTests(TestCase):
                 self.client.post("/entrar/", {"username": username, "password": "senha"}),
                 "/admin/dashboard/",
             )
+
+    def test_dashboard_counts_respect_unit_scope_and_fall_back_on_unknown_unit(self):
+        latec = InstitutionalUnit.objects.get(slug="latec")
+        outside = InstitutionalUnit.objects.get(slug="labtec-in")
+        Project.objects.create(
+            unit=latec,
+            title="Rascunho da LATEC",
+            slug="rascunho-latec-dashboard",
+            editorial_status=EditorialStatus.DRAFT,
+        )
+        user = get_user_model().objects.create_user("coord-latec-dash", password="senha", is_staff=True)
+        Profile.objects.create(user=user, role=Profile.AdminRole.UNIT_COORDINATOR, primary_unit=latec)
+        self.client.force_login(user)
+
+        response = self.client.get("/admin/dashboard/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Todas as minhas unidades")
+        self.assertNotContains(response, '<option value="labtec-in"')
+        before = {item["status"]: item["count"] for item in response.context["totals"]}
+
+        Project.objects.create(
+            unit=outside,
+            title="Rascunho de outra unidade",
+            slug="rascunho-fora-dashboard",
+            editorial_status=EditorialStatus.DRAFT,
+        )
+        after = {
+            item["status"]: item["count"]
+            for item in self.client.get("/admin/dashboard/").context["totals"]
+        }
+        self.assertEqual(after, before)
+
+        response = self.client.get("/admin/dashboard/?unit=labtec-in")
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "selected")
+
+        partial = self.client.get("/admin/dashboard/?unit=latec", HTTP_HX_REQUEST="true")
+        self.assertContains(partial, "editorial_status__exact=draft")
+        self.assertContains(partial, f"unit__id__exact={latec.pk}")
+
+    def test_dashboard_shows_empty_state_for_mentor_without_axes(self):
+        latec = InstitutionalUnit.objects.get(slug="latec")
+        person = Person.objects.create(full_name="Orientador sem eixo", slug="orientador-sem-eixo")
+        user = get_user_model().objects.create_user("mentor-sem-eixo", password="senha", is_staff=True)
+        Profile.objects.create(
+            user=user,
+            role=Profile.AdminRole.MENTOR,
+            primary_unit=latec,
+            person=person,
+        )
+        self.client.force_login(user)
+        response = self.client.get("/admin/dashboard/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Nenhum conteúdo no seu escopo")

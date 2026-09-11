@@ -1,13 +1,13 @@
-from django.contrib import messages
+from django.contrib import admin, messages
 from django.contrib.auth import authenticate, login, logout
-from django.db.models import Prefetch, Q
+from django.db.models import Count, Prefetch, Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
-from apps.common.admin_scoping import has_active_admin_scope
+from apps.common.admin_scoping import get_admin_profile, has_active_admin_scope, is_global_admin
 from apps.common.models import EditorialStatus
 from apps.core.models import HeroBanner, InstitutionalSection, SiteSettings
 from apps.institutional.models import InstitutionalUnit
@@ -242,19 +242,72 @@ def staff_logout(request):
     return HttpResponseRedirect(reverse("staff-login"))
 
 
+EDITORIAL_MODELS = (
+    Project,
+    ResearchProject,
+    AcademicWork,
+    ScientificOutput,
+    Post,
+    Course,
+    TransparencyDocument,
+)
+
+
 def admin_dashboard(request):
     if not has_active_admin_scope(request):
         return HttpResponseRedirect(f"{reverse('staff-login')}?next={request.path}")
+    global_admin = is_global_admin(request)
+    if global_admin:
+        units = InstitutionalUnit.objects.order_by("display_order", "name")
+    else:
+        profile = get_admin_profile(request)
+        units = InstitutionalUnit.objects.filter(pk__in=profile.accessible_unit_ids()).order_by("display_order", "name")
     unit_slug = request.GET.get("unit", "")
-    projects = Project.objects.filter(unit__slug=unit_slug) if unit_slug else Project.objects.all()
-    counts = {
-        status: projects.filter(editorial_status=status).count()
-        for status, _label in EditorialStatus.choices
-    }
+    # ponytail: slug inválido/fora do escopo cai silenciosamente no escopo completo; upgrade: mensagem inline.
+    if unit_slug and not units.filter(slug=unit_slug).exists():
+        unit_slug = ""
+    selected_unit = units.filter(slug=unit_slug).first() if unit_slug else None
+    unit_filter = f"&unit__id__exact={selected_unit.pk}" if selected_unit else ""
+
+    status_choices = list(EditorialStatus.choices)
+    totals = {status: 0 for status, _label in status_choices}
+    rows = []
+    for model in EDITORIAL_MODELS:
+        modeladmin = admin.site._registry.get(model)
+        if modeladmin is None:
+            continue
+        # Mesmo queryset do Admin: escopo por unidade, eixo do orientador e nível de acesso.
+        scoped = modeladmin.get_queryset(request)
+        if selected_unit:
+            scoped = scoped.filter(unit=selected_unit)
+        per_status = dict(scoped.values_list("editorial_status").annotate(total=Count("id")))
+        if not any(per_status.values()):
+            continue
+        changelist = reverse(f"admin:{model._meta.app_label}_{model._meta.model_name}_changelist")
+        cells = []
+        for status, label in status_choices:
+            count = per_status.get(status, 0)
+            totals[status] += count
+            cells.append({
+                "status": status,
+                "label": label,
+                "count": count,
+                "url": f"{changelist}?editorial_status__exact={status}{unit_filter}",
+            })
+        rows.append({
+            "label": model._meta.verbose_name_plural,
+            "cells": cells,
+            "total": sum(cell["count"] for cell in cells),
+        })
     context = {
-        "counts": counts,
-        "units": InstitutionalUnit.objects.order_by("display_order", "name"),
+        "totals": [
+            {"status": status, "label": label, "count": totals[status]}
+            for status, label in status_choices
+        ],
+        "rows": rows,
+        "units": units,
         "selected_unit": unit_slug,
+        "all_units_label": "Todas" if global_admin else "Todas as minhas unidades",
     }
     template = "portal/partials/admin_dashboard_counts.html" if request.headers.get("HX-Request") else "portal/admin_dashboard.html"
     return render(request, template, context)
