@@ -1,5 +1,5 @@
 {% for item in items %}
-<article class="card">
+<article class="card"{% if kind == 'partner' %} id="{{ item.slug }}"{% endif %}>
   {% if kind == 'project' and item.cover_image %}<img class="card-media" src="{{ item.cover_image.url }}" alt="">{% elif kind == 'post' and item.cover_image %}<img class="card-media" src="{{ item.cover_image.url }}" alt="">{% endif %}
   <div class="card-content">
     <p class="section-kicker">{% if kind == 'project' %}Projeto{% elif kind == 'post' %}Atualização{% elif kind == 'research_project' %}Pesquisa{% elif kind == 'academic_work' %}Trabalho acadêmico{% elif kind == 'scientific_output' %}Produção científica{% elif kind == 'transparency_document' %}Transparência{% elif kind == 'course' %}Capacitação{% else %}Parceiro{% endif %}</p>

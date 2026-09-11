@@ -6,8 +6,9 @@ from apps.accounts.models import Profile
 from apps.common.models import EditorialStatus
 from apps.institutional.models import InstitutionalUnit
 from apps.portfolio.models import Project
-from apps.partnerships.models import ContactMessage
+from apps.partnerships.models import ContactMessage, Partner
 from apps.people.models import Person
+from apps.research.models import AcademicWork
 
 
 class PortalWebTests(TestCase):
@@ -105,6 +106,130 @@ class PortalWebTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(all(item["slug"] != "rascunho-secreto" for item in response.json()["results"]))
         self.assertTrue(any(item["slug"] == "farma-amazonia" for item in response.json()["results"]))
+
+    def test_portfolio_is_a_six_destination_hub_and_projects_keep_their_catalog(self):
+        response = self.client.get("/portfolio/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="card portfolio-hub-card"', count=6)
+        for path in (
+            "/portfolio/projetos/",
+            "/portfolio/projetos/startups/",
+            "/portfolio/pesquisas/",
+            "/portfolio/tccs/",
+            "/portfolio/producao-cientifica/",
+            "/portfolio/transparencia/",
+        ):
+            with self.subTest(path=path):
+                self.assertContains(response, f'href="{path}"')
+
+        projects = self.client.get("/portfolio/projetos/")
+        self.assertContains(projects, "Farma Amazônia")
+        self.assertRedirects(
+            self.client.get("/portfolio/?q=Farma"),
+            "/portfolio/projetos/?q=Farma",
+            fetch_redirect_response=False,
+        )
+
+    def test_academic_catalog_includes_every_published_work_type(self):
+        unit = InstitutionalUnit.objects.get(slug="latec")
+        published_titles = []
+        for work_type in AcademicWork.WorkType.values:
+            title = f"Trabalho público {work_type}"
+            published_titles.append(title)
+            AcademicWork.objects.create(
+                unit=unit,
+                title=title,
+                slug=f"trabalho-publico-{work_type}",
+                work_type=work_type,
+                editorial_status=EditorialStatus.PUBLISHED,
+            )
+        AcademicWork.objects.create(
+            unit=unit,
+            title="Tese ainda em rascunho",
+            slug="tese-em-rascunho",
+            work_type=AcademicWork.WorkType.THESIS,
+            editorial_status=EditorialStatus.DRAFT,
+        )
+
+        response = self.client.get("/portfolio/tccs/")
+
+        for title in published_titles:
+            self.assertContains(response, title)
+        self.assertNotContains(response, "Tese ainda em rascunho")
+
+    def test_public_navigation_exposes_partners_and_search(self):
+        response = self.client.get("/")
+
+        self.assertContains(response, 'href="/parceiros/"', count=2)
+        self.assertContains(response, 'href="/busca/"', count=2)
+        self.assertContains(response, "Explore o portfólio")
+        content = response.content.decode()
+        self.assertLess(content.index('id="mobile-menu-toggle"'), content.index('<nav id="main-nav"'))
+
+    def test_search_page_works_with_standard_get_and_htmx(self):
+        Project.objects.create(
+            unit=InstitutionalUnit.objects.get(slug="latec"),
+            title="Farma confidencial",
+            slug="farma-confidencial",
+            editorial_status=EditorialStatus.DRAFT,
+        )
+        response = self.client.get("/busca/?q=Farma")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Farma Amazônia")
+        self.assertNotContains(response, "Farma confidencial")
+        self.assertContains(response, 'href="/portfolio/projetos/farma-amazonia/"')
+        self.assertContains(self.client.get("/busca/?q="), "Digite um termo para pesquisar.")
+        self.assertContains(self.client.get("/busca/?q=conteudo-inexistente"), "Nenhum resultado encontrado.")
+
+        partial = self.client.get("/busca/?q=Farma", HTTP_HX_REQUEST="true")
+        self.assertEqual(partial.status_code, 200)
+        self.assertContains(partial, "Farma Amazônia")
+        self.assertNotContains(partial, "<!doctype html>")
+
+    def test_search_template_escapes_content_and_public_anchors_exist(self):
+        unit = InstitutionalUnit.objects.get(slug="latec")
+        Project.objects.create(
+            unit=unit,
+            title="Projeto <script>alert(1)</script>",
+            slug="projeto-seguro",
+            summary="Resumo <strong>não confiável</strong>",
+            editorial_status=EditorialStatus.PUBLISHED,
+        )
+
+        response = self.client.get("/busca/?q=Projeto")
+        self.assertContains(response, "Projeto &lt;script&gt;alert(1)&lt;/script&gt;")
+        self.assertContains(response, "Resumo &lt;strong&gt;não confiável&lt;/strong&gt;")
+        self.assertNotContains(response, "Projeto <script>alert(1)</script>")
+
+        about = self.client.get("/sobre/")
+        person = about.context["people"].first()
+        self.assertContains(about, f'id="pessoa-{person.slug}"')
+        self.assertContains(
+            self.client.get("/busca/", {"q": person.full_name}),
+            f'href="/sobre/#pessoa-{person.slug}"',
+        )
+
+        partner = Partner.objects.create(name="Parceiro de teste", slug="parceiro-de-teste")
+        partner.units.add(unit)
+        partners = self.client.get("/parceiros/")
+        self.assertContains(partners, f'id="{partner.slug}"')
+        self.assertContains(
+            self.client.get("/busca/", {"q": partner.name}),
+            f'href="/parceiros/#{partner.slug}"',
+        )
+
+    def test_search_api_keeps_its_public_payload_contract(self):
+        response = self.client.get("/api/v1/search/?q=Farma&type=project&unit=latec")
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(set(payload), {"count", "results"})
+        self.assertEqual(
+            set(payload["results"][0]),
+            {"type", "title", "slug", "summary", "unit", "url"},
+        )
 
     def test_contact_api_returns_htmx_feedback_and_persists_message(self):
         response = self.client.post(

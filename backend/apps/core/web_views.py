@@ -9,6 +9,7 @@ from django.views.decorators.http import require_http_methods
 
 from apps.common.admin_scoping import get_admin_profile, has_active_admin_scope, is_global_admin
 from apps.common.models import EditorialStatus
+from apps.common.search import public_search_results
 from apps.core.models import HeroBanner, InstitutionalSection, SiteSettings
 from apps.institutional.models import InstitutionalUnit
 from apps.institutional.models import InstitutionMembership
@@ -122,11 +123,13 @@ def about(request):
 
 
 def portfolio(request):
-    return _catalog(request, "Portfólio e projetos", _published(Project).select_related("unit", "category"), "project")
+    if request.GET.get("q") is not None:
+        return HttpResponseRedirect(f"{reverse('projects')}?{request.GET.urlencode()}")
+    return render(request, "portal/portfolio.html")
 
 
 def projects(request):
-    return portfolio(request)
+    return _catalog(request, "Projetos", _published(Project).select_related("unit", "category"), "project")
 
 
 def startups(request):
@@ -149,7 +152,7 @@ def research_detail(request, slug):
 
 
 def academic_works(request):
-    queryset = _published(AcademicWork).filter(work_type=AcademicWork.WorkType.TCC).select_related("unit")
+    queryset = _published(AcademicWork).select_related("unit")
     return _catalog(request, "TCCs e trabalhos acadêmicos", queryset, "academic_work")
 
 
@@ -216,7 +219,11 @@ def contact(request):
 
 
 def search(request):
-    return render(request, "portal/search.html")
+    query = request.GET.get("q", "").strip()
+    context = {"query": query, "results": public_search_results(query)}
+    if request.headers.get("HX-Request"):
+        return render(request, "portal/partials/search_results.html", context)
+    return render(request, "portal/search.html", context)
 
 
 @require_http_methods(["GET", "POST"])
