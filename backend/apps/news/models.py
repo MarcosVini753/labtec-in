@@ -25,8 +25,8 @@ class Post(BaseModel):
 
     class Meta:
         ordering = ("-published_at", "title")
-        verbose_name = "post"
-        verbose_name_plural = "posts"
+        verbose_name = "notícia"
+        verbose_name_plural = "notícias"
 
     def __str__(self) -> str:
         return self.title

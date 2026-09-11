@@ -1401,3 +1401,65 @@ textarea:focus {
 .composed-title span {
   display: block;
 }
+
+.dashboard-cards {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  margin: 16px 0 24px;
+}
+
+.dashboard-card {
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(212, 216, 206, 0.9);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 20px;
+}
+
+.dashboard-card span {
+  color: var(--color-forest);
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.dashboard-matrix {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(212, 216, 206, 0.9);
+  border-radius: var(--radius-md);
+  border-spacing: 0;
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  width: 100%;
+}
+
+.dashboard-matrix th,
+.dashboard-matrix td {
+  border-bottom: 1px solid rgba(212, 216, 206, 0.6);
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.dashboard-matrix thead th {
+  background: var(--color-bg-soft);
+  font-size: 0.85rem;
+}
+
+.dashboard-matrix tbody th {
+  font-weight: 700;
+}
+
+.dashboard-matrix td a {
+  color: var(--color-forest);
+  font-weight: 800;
+}
+
+.dashboard-matrix td a:hover,
+.dashboard-matrix td a:focus-visible {
+  text-decoration: underline;
+}

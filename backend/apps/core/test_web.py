@@ -1,12 +1,13 @@
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import Client, TestCase
 
 from apps.accounts.models import Profile
 from apps.common.models import EditorialStatus
 from apps.institutional.models import InstitutionalUnit
 from apps.portfolio.models import Project
 from apps.partnerships.models import ContactMessage
+from apps.people.models import Person
 
 
 class PortalWebTests(TestCase):
@@ -121,10 +122,84 @@ class PortalWebTests(TestCase):
         self.assertContains(response, "Mensagem enviada", status_code=201)
         self.assertEqual(ContactMessage.objects.get().status, ContactMessage.MessageStatus.NEW)
 
+    def test_contact_page_posts_without_javascript_and_preserves_invalid_data(self):
+        payload = {
+            "contact_type": "questions",
+            "subject": "Informações",
+            "name": "Visitante",
+            "email": "visitante@example.com",
+            "message": "Gostaria de saber mais.",
+        }
+        response = self.client.post("/contato/", payload, follow=True)
+        self.assertRedirects(response, "/contato/")
+        self.assertContains(response, "Mensagem enviada com sucesso")
+        self.assertEqual(ContactMessage.objects.filter(email=payload["email"]).count(), 1)
+
+        invalid = {**payload, "subject": "Assunto preservado", "email": ""}
+        response = self.client.post("/contato/", invalid)
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, "Revise os campos", status_code=400)
+        self.assertContains(response, 'value="Assunto preservado"', status_code=400)
+        self.assertEqual(ContactMessage.objects.filter(subject="Assunto preservado").count(), 0)
+
+    def test_contact_page_returns_htmx_feedback_for_success_and_validation(self):
+        payload = {
+            "contact_type": "press",
+            "subject": "Imprensa",
+            "name": "Assessoria",
+            "email": "assessoria@example.com",
+            "message": "Solicitação de entrevista.",
+        }
+        response = self.client.post("/contato/", payload, HTTP_HX_REQUEST="true")
+        self.assertContains(response, "Mensagem enviada", status_code=201)
+        self.assertEqual(ContactMessage.objects.filter(email=payload["email"]).count(), 1)
+
+        response = self.client.post("/contato/", {**payload, "contact_type": "invalid"}, HTTP_HX_REQUEST="true")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Revise os campos")
+        self.assertEqual(ContactMessage.objects.filter(email=payload["email"]).count(), 1)
+
+    def test_authenticated_contact_post_accepts_a_real_csrf_token(self):
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(get_user_model().objects.create_superuser("csrf-admin", password="password"))
+        client.get("/contato/")
+        token = client.cookies["csrftoken"].value
+        response = client.post(
+            "/contato/",
+            {
+                "csrfmiddlewaretoken": token,
+                "contact_type": "other",
+                "subject": "Sessão autenticada",
+                "name": "Administradora",
+                "email": "admin@example.com",
+                "message": "Teste com CSRF.",
+            },
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(ContactMessage.objects.filter(subject="Sessão autenticada").exists())
+
     def test_only_active_administrative_scope_can_use_portal_login(self):
-        user = get_user_model().objects.create_user(username="sem-escopo", password="senha")
-        self.assertEqual(self.client.post("/entrar/", {"username": user.username, "password": "senha"}).status_code, 200)
+        user = get_user_model().objects.create_user(username="sem-escopo", password="senha", is_staff=True)
+        denied = self.client.post("/entrar/", {"username": user.username, "password": "senha"})
+        self.assertContains(denied, "não possui um perfil administrativo ativo e válido")
         self.assertNotIn("_auth_user_id", self.client.session)
+
+        incomplete = get_user_model().objects.create_user(
+            username="perfil-sem-unidade",
+            password="senha",
+            is_staff=True,
+        )
+        Profile.objects.create(user=incomplete, role=Profile.AdminRole.UNIT_COORDINATOR)
+        denied = self.client.post("/entrar/", {"username": incomplete.username, "password": "senha"})
+        self.assertContains(denied, "não possui um perfil administrativo ativo e válido")
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+        self.client.force_login(user)
+        response = self.client.get("/admin/")
+        self.assertRedirects(response, "/entrar/?reason=admin-scope", fetch_redirect_response=False)
+        self.assertNotIn("_auth_user_id", self.client.session)
+        self.assertContains(self.client.get(response.url), "não possui um perfil administrativo ativo e válido")
 
         scoped = get_user_model().objects.create_user(username="coordenador", password="senha", is_staff=True)
         profile = Profile.objects.create(
@@ -138,3 +213,17 @@ class PortalWebTests(TestCase):
         partial = self.client.get("/admin/dashboard/?unit=latec", HTTP_HX_REQUEST="true")
         self.assertEqual(partial.status_code, 200)
         self.assertContains(partial, "published")
+
+        latec = InstitutionalUnit.objects.get(slug="latec")
+        mentor_person = Person.objects.create(full_name="Orientadora do login", slug="orientadora-login")
+        for username, role, extra in (
+            ("coordenador-unidade", Profile.AdminRole.UNIT_COORDINATOR, {}),
+            ("orientador", Profile.AdminRole.MENTOR, {"person": mentor_person}),
+        ):
+            self.client.logout()
+            account = get_user_model().objects.create_user(username=username, password="senha", is_staff=True)
+            Profile.objects.create(user=account, role=role, primary_unit=latec, **extra)
+            self.assertRedirects(
+                self.client.post("/entrar/", {"username": username, "password": "senha"}),
+                "/admin/dashboard/",
+            )

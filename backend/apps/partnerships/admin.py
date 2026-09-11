@@ -1,12 +1,14 @@
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
 
+from apps.accounts.models import Profile
 from apps.common.admin_scoping import (
-    LabCoordinatorOnlyAdminMixin,
     UnitScopedAdminMixin,
     can_publish,
     get_admin_profile,
+    has_active_admin_scope,
     is_global_admin,
+    is_lab_coordinator,
 )
 from apps.partnerships.models import ContactMessage, Partner
 
@@ -56,7 +58,8 @@ class PartnerAdmin(UnitScopedAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(ContactMessage)
-class ContactMessageAdmin(LabCoordinatorOnlyAdminMixin, admin.ModelAdmin):
+class ContactMessageAdmin(UnitScopedAdminMixin, admin.ModelAdmin):
+    unit_lookup = None
     list_display = ("subject", "contact_type", "name", "email", "organization", "status", "created_at", "responded_at")
     list_filter = ("contact_type", "status", "created_at", "responded_at")
     search_fields = ("subject", "name", "email", "organization", "message")
@@ -67,3 +70,34 @@ class ContactMessageAdmin(LabCoordinatorOnlyAdminMixin, admin.ModelAdmin):
         ("Atendimento", {"fields": ("responded_at",)}),
         ("Auditoria", {"fields": ("created_at", "updated_at")}),
     )
+
+    def has_module_permission(self, request):
+        if is_global_admin(request):
+            return True
+        profile = get_admin_profile(request)
+        return bool(
+            has_active_admin_scope(request)
+            and profile
+            and profile.role
+            in {Profile.AdminRole.LAB_COORDINATOR, Profile.AdminRole.UNIT_COORDINATOR}
+        )
+
+    def get_queryset(self, request):
+        queryset = admin.ModelAdmin.get_queryset(self, request)
+        return queryset if self.has_module_permission(request) else queryset.none()
+
+    def has_view_permission(self, request, obj=None):
+        return self.has_module_permission(request)
+
+    def has_add_permission(self, request):
+        return (is_global_admin(request) or is_lab_coordinator(request)) and super().has_add_permission(request)
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly = set(super().get_readonly_fields(request, obj))
+        profile = get_admin_profile(request)
+        if profile and profile.role == Profile.AdminRole.UNIT_COORDINATOR:
+            readonly.update(("contact_type", "subject", "message", "name", "email", "organization"))
+        return tuple(readonly)
+
+    def _submitted_scope_is_allowed(self, request, obj):
+        return self.has_module_permission(request)

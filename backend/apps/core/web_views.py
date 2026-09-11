@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.db.models import Prefetch, Q
 from django.http import HttpResponse, HttpResponseRedirect
@@ -15,11 +16,18 @@ from apps.learning.models import Course
 from apps.metrics.models import ImpactMetric
 from apps.news.models import Post
 from apps.partnerships.models import Partner
+from apps.partnerships.serializers import ContactMessageSerializer
 from apps.people.models import Person
 from apps.portfolio.models import Project
 from apps.research.models import AcademicWork, ResearchProject
 from apps.scientific.models import ScientificOutput
 from apps.transparency.models import TransparencyDocument
+
+
+ADMIN_SCOPE_ERROR = (
+    "Sua conta foi autenticada, mas não possui um perfil administrativo ativo e válido. "
+    "Solicite a configuração do papel e da unidade."
+)
 
 
 def _published(model):
@@ -190,8 +198,21 @@ def partners(request):
     return render(request, "portal/catalog.html", {"page_title": "Parceiros", "items": Partner.objects.filter(is_active=True), "kind": "partner"})
 
 
+@require_http_methods(["GET", "POST"])
 def contact(request):
-    return render(request, "portal/contact.html")
+    context = {}
+    if request.method == "POST":
+        serializer = ContactMessageSerializer(data=request.POST)
+        if serializer.is_valid():
+            serializer.save()
+            if request.headers.get("HX-Request"):
+                return render(request, "portal/partials/contact_feedback.html", {"success": True}, status=201)
+            messages.success(request, "Mensagem enviada com sucesso.")
+            return HttpResponseRedirect(reverse("contact"))
+        context = {"errors": serializer.errors, "form_data": request.POST}
+        if request.headers.get("HX-Request"):
+            return render(request, "portal/partials/contact_feedback.html", context)
+    return render(request, "portal/contact.html", context, status=400 if context else 200)
 
 
 def search(request):
@@ -202,7 +223,7 @@ def search(request):
 def staff_login(request):
     if request.user.is_authenticated and has_active_admin_scope(request):
         return HttpResponseRedirect(reverse("admin-dashboard"))
-    error = None
+    error = ADMIN_SCOPE_ERROR if request.GET.get("reason") == "admin-scope" else None
     if request.method == "POST":
         user = authenticate(request, username=request.POST.get("username", ""), password=request.POST.get("password", ""))
         if user:
@@ -210,7 +231,9 @@ def staff_login(request):
             if has_active_admin_scope(request):
                 return HttpResponseRedirect(reverse("admin-dashboard"))
             logout(request)
-        error = "Usuário ou senha inválidos, ou usuário sem escopo administrativo ativo."
+            error = ADMIN_SCOPE_ERROR
+        else:
+            error = "Usuário ou senha inválidos."
     return render(request, "portal/login.html", {"error": error})
 
 
