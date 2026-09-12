@@ -2,7 +2,7 @@
 
 ## Status
 
-Aceita
+Substituída pela [ADR 0019](0019-compartilhar-caixa-de-contato-entre-coordenacoes.md).
 
 ## Contexto
 

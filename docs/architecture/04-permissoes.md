@@ -24,6 +24,7 @@ Os antigos papéis customizados `admin`, `editor` e `reader` foram removidos. Pe
 - `is_active_admin`.
 
 Perfil inativo, sem escopo aplicável ou usuário sem acesso ao Admin não recebe permissão institucional.
+O formulário administrativo de usuário impede habilitar um não-superusuário como membro da equipe sem um perfil administrativo ativo e válido.
 
 ## Matriz
 
@@ -53,7 +54,7 @@ Regras especiais:
 
 - mentor acessa apenas objetos relacionados aos próprios eixos;
 - parceiro ligado a várias unidades é editável somente por superusuário ou coordenação do LABTEC.IN;
-- mensagens de contato ficam restritas a esses dois perfis;
+- mensagens de contato formam uma caixa compartilhada entre superusuários, coordenação do LABTEC.IN e coordenações de unidades; coordenadores de unidade alteram somente o status e a data de atendimento, sem criar ou excluir mensagens, e mentores não recebem acesso;
 - usuários, perfis e unidades são geridos somente por superusuário;
 - coordenação do LABTEC.IN pode gerir memberships, mas não elevar privilégios administrativos.
 

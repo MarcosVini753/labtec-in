@@ -24,14 +24,11 @@ def has_active_admin_scope(request) -> bool:
     if request.user.is_superuser:
         return True
     profile = get_admin_profile(request)
-    return bool(
-        profile
-        and profile.is_active_admin
-        and (
-            profile.role != Profile.AdminRole.LAB_COORDINATOR
-            or profile.is_lab_coordinator
-        )
-    )
+    if not profile or not profile.is_active_admin or profile.role not in Profile.AdminRole.values:
+        return False
+    if profile.role == Profile.AdminRole.MENTOR and not profile.person_id:
+        return False
+    return bool(profile.accessible_unit_ids())
 
 
 def is_global_admin(request) -> bool:

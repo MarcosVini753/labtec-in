@@ -161,7 +161,6 @@ O seed copia os ativos versionados em `backend/seed_assets/` para o volume de m�
 | `edge-unit-coordinator` | Coordenação LATEC |
 | `edge-mentor` | Orientador da LATEC (eixo 1) |
 | `edge-inactive-admin` | Usuário administrativo inativo |
-| `edge-wrong-lab-coordinator` | Perfil LABTEC inválido |
 | `edge-no-profile` | Usuário sem Profile |
 
 A senha de todos é: `senha-de-teste`
@@ -217,7 +216,7 @@ Principais URLs:
 /busca/
 ```
 
-Teste também: `http://127.0.0.1:8000/portfolio/projetos/startups/`
+`/portfolio/` é o hub dos seis catálogos públicos. O catálogo completo de projetos fica em `/portfolio/projetos/`; a URL de startups é `/portfolio/projetos/startups/`.
 
 Você deve visualizar: Farma Amazônia, Remédio Vivo, Amazon Green Line.
 
@@ -243,7 +242,7 @@ Após login, o dashboard está em: `http://127.0.0.1:8000/admin/dashboard/`
 http://127.0.0.1:8000/busca/
 ```
 
-Digite `Farma`. A busca usa HTMX e consulta `GET /api/v1/search/?q=Farma`.
+Digite `Farma`. O formulário funciona como um `GET` convencional mesmo sem JavaScript e usa HTMX para atualizar apenas os resultados quando disponível. A página e a API compartilham a mesma consulta de conteúdos públicos.
 
 Também via `curl`:
 ```bash

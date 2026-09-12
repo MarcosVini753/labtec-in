@@ -8,40 +8,44 @@
       <h1 class="section-title">Contato e parcerias</h1>
       <p class="section-lead">Envie dúvidas, solicitações de imprensa, propostas de parceria ou mensagens sobre processo seletivo.</p>
     </div>
-    <form class="form-card" hx-post="/api/v1/contact/" hx-target="#contact-feedback" hx-swap="innerHTML">
+    <form class="form-card" method="post" action="{% url 'contact' %}" hx-post="{% url 'contact' %}" hx-target="#contact-feedback" hx-swap="innerHTML">
+      {% csrf_token %}
       <div class="form-grid">
         <div class="form-field full">
           <label for="contact-type">Motivo do contato <span class="required">*</span></label>
           <select id="contact-type" name="contact_type" required>
             <option value="">Selecione uma categoria</option>
-            <option value="questions">Dúvidas</option>
-            <option value="press">Imprensa</option>
-            <option value="partnership">Quero ser parceiro</option>
-            <option value="selection_process">Processo seletivo</option>
-            <option value="other">Outro</option>
+            <option value="questions"{% if form_data.contact_type == 'questions' %} selected{% endif %}>Dúvidas</option>
+            <option value="press"{% if form_data.contact_type == 'press' %} selected{% endif %}>Imprensa</option>
+            <option value="partnership"{% if form_data.contact_type == 'partnership' %} selected{% endif %}>Quero ser parceiro</option>
+            <option value="selection_process"{% if form_data.contact_type == 'selection_process' %} selected{% endif %}>Processo seletivo</option>
+            <option value="other"{% if form_data.contact_type == 'other' %} selected{% endif %}>Outro</option>
           </select>
           <p class="help-text">Isso ajuda a direcionar sua mensagem para o fluxo correto.</p>
         </div>
         <div class="form-field">
           <label for="contact-name">Nome <span class="required">*</span></label>
-          <input id="contact-name" name="name" required>
+          <input id="contact-name" name="name" value="{{ form_data.name|default:'' }}" required>
         </div>
         <div class="form-field">
           <label for="contact-email">E-mail <span class="required">*</span></label>
-          <input id="contact-email" type="email" name="email" required>
+          <input id="contact-email" type="email" name="email" value="{{ form_data.email|default:'' }}" required>
         </div>
         <div class="form-field full">
           <label for="contact-subject">Assunto <span class="required">*</span></label>
-          <input id="contact-subject" name="subject" required>
+          <input id="contact-subject" name="subject" value="{{ form_data.subject|default:'' }}" required>
         </div>
         <div class="form-field full">
           <label for="contact-message">Mensagem <span class="required">*</span></label>
-          <textarea id="contact-message" name="message" required></textarea>
+          <textarea id="contact-message" name="message" required>{{ form_data.message|default:'' }}</textarea>
           <p class="help-text">Inclua contexto, prazos e links úteis, se existirem.</p>
         </div>
       </div>
       <button type="submit" class="btn btn-primary">Enviar mensagem</button>
-      <div id="contact-feedback" aria-live="polite"></div>
+      <div id="contact-feedback" aria-live="polite">
+        {% for message in messages %}<p class="success" role="status">{{ message }}</p>{% endfor %}
+        {% if errors %}{% include 'portal/partials/contact_feedback.html' %}{% endif %}
+      </div>
     </form>
   </div>
 </section>

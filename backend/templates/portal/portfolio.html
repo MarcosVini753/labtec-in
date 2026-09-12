@@ -1,0 +1,51 @@
+{% extends 'portal/base.html' %}
+{% block title %}Portfólio · LABTEC.IN{% endblock %}
+{% block content %}
+<section class="page-section compact">
+  <div class="container">
+    <div class="section-heading">
+      <p class="section-kicker">Conhecimento e inovação</p>
+      <h1 class="section-title">Portfólio</h1>
+      <p class="section-lead">Explore os projetos, pesquisas e resultados públicos do LABTEC.IN e de suas unidades.</p>
+    </div>
+    <div class="card-grid portfolio-hub">
+      <a class="card portfolio-hub-card" href="{% url 'projects' %}">
+        <p class="section-kicker">Inovação aplicada</p>
+        <h2>Projetos</h2>
+        <p>Soluções, produtos, ações de extensão e iniciativas desenvolvidas pelo ecossistema.</p>
+        <span class="card-link">Acessar catálogo</span>
+      </a>
+      <a class="card portfolio-hub-card" href="{% url 'startups' %}">
+        <p class="section-kicker">Empreendedorismo</p>
+        <h2>Startups</h2>
+        <p>Negócios inovadores apoiados pelo laboratório e seus respectivos perfis.</p>
+        <span class="card-link">Acessar catálogo</span>
+      </a>
+      <a class="card portfolio-hub-card" href="{% url 'research' %}">
+        <p class="section-kicker">Investigação</p>
+        <h2>Pesquisas</h2>
+        <p>Estudos e projetos de pesquisa desenvolvidos nas áreas de atuação do laboratório.</p>
+        <span class="card-link">Acessar catálogo</span>
+      </a>
+      <a class="card portfolio-hub-card" href="{% url 'academic-works' %}">
+        <p class="section-kicker">Formação acadêmica</p>
+        <h2>TCCs e trabalhos acadêmicos</h2>
+        <p>TCCs, monografias, iniciações científicas, dissertações, teses e outros trabalhos.</p>
+        <span class="card-link">Acessar catálogo</span>
+      </a>
+      <a class="card portfolio-hub-card" href="{% url 'scientific-outputs' %}">
+        <p class="section-kicker">Publicações</p>
+        <h2>Produção científica</h2>
+        <p>Artigos, resumos, livros, patentes, relatórios técnicos e demais produções.</p>
+        <span class="card-link">Acessar catálogo</span>
+      </a>
+      <a class="card portfolio-hub-card" href="{% url 'transparency' %}">
+        <p class="section-kicker">Acesso público</p>
+        <h2>Transparência</h2>
+        <p>Editais, atas, resultados e outros documentos institucionais publicados.</p>
+        <span class="card-link">Acessar catálogo</span>
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

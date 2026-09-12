@@ -22,7 +22,6 @@ class EdgeCaseSeedTests(TestCase):
         call_command("seed_edge_case_data", password="edge-test-password", verbosity=0)
 
         expected_slugs = {
-            InstitutionalUnit: {"nucleo-latec-teste", "unidade-externa-teste"},
             Person: {
                 "pessoa-sem-vinculo-teste",
                 "pessoa-multiplos-vinculos-teste",
@@ -31,7 +30,7 @@ class EdgeCaseSeedTests(TestCase):
             },
             Project: {
                 "projeto-rascunho-teste",
-                "projeto-em-revisao-nucleo-teste",
+                "projeto-em-revisao-teste",
                 "projeto-arquivado-teste",
             },
             Post: {"post-rascunho-teste", "post-arquivado-teste"},
@@ -50,14 +49,16 @@ class EdgeCaseSeedTests(TestCase):
 
         self.assertEqual(
             InstitutionMembership.objects.filter(person__slug="pessoa-multiplos-vinculos-teste").count(),
-            3,
+            2,
         )
-        self.assertEqual(get_user_model().objects.filter(username__startswith="edge-").count(), 6)
-        self.assertEqual(Profile.objects.filter(user__username__startswith="edge-").count(), 5)
+        self.assertEqual(get_user_model().objects.filter(username__startswith="edge-").count(), 5)
+        self.assertEqual(Profile.objects.filter(user__username__startswith="edge-").count(), 4)
 
-    def test_edge_hierarchy_and_membership_visibility_are_present(self):
-        nucleus = InstitutionalUnit.objects.get(slug="nucleo-latec-teste")
-        self.assertEqual(nucleus.parent.slug, "latec")
+    def test_edge_membership_visibility_and_retired_units_are_handled(self):
+        self.assertFalse(
+            InstitutionalUnit.objects.filter(slug__in=("nucleo-latec-teste", "unidade-externa-teste")).exists()
+        )
+        self.assertFalse(Project.objects.filter(slug="projeto-em-revisao-nucleo-teste").exists())
 
         inactive = InstitutionMembership.objects.get(role="Vínculo encerrado")
         self.assertFalse(inactive.is_active)
@@ -70,7 +71,7 @@ class EdgeCaseSeedTests(TestCase):
         for endpoint, hidden_slugs in {
             "projects": {
                 "projeto-rascunho-teste",
-                "projeto-em-revisao-nucleo-teste",
+                "projeto-em-revisao-teste",
                 "projeto-arquivado-teste",
             },
             "posts": {"post-rascunho-teste", "post-arquivado-teste"},
@@ -94,6 +95,45 @@ class EdgeCaseSeedTests(TestCase):
         call_command("seed_edge_case_data", password="edge-test-password", verbosity=0)
 
         self.assertFalse(Post.objects.filter(slug="post-publicado-teste").exists())
+
+    def test_seed_retires_removed_test_units_and_their_content(self):
+        latec = InstitutionalUnit.objects.get(slug="latec")
+        nucleus = InstitutionalUnit.objects.create(
+            name="Núcleo LATEC (teste)",
+            acronym="NLT",
+            slug="nucleo-latec-teste",
+            unit_type=InstitutionalUnit.UnitType.INITIATIVE,
+            parent=latec,
+        )
+        external = InstitutionalUnit.objects.create(
+            name="Unidade externa (teste)",
+            acronym="UET",
+            slug="unidade-externa-teste",
+            unit_type=InstitutionalUnit.UnitType.RESEARCH_GROUP,
+        )
+        Project.objects.create(
+            unit=nucleus,
+            title="Projeto em revisão no núcleo (teste)",
+            slug="projeto-em-revisao-nucleo-teste",
+            editorial_status=EditorialStatus.IN_REVIEW,
+        )
+        person = Person.objects.get(slug="pessoa-multiplos-vinculos-teste")
+        InstitutionMembership.objects.create(
+            person=person,
+            unit=external,
+            role="Colaborador externo",
+            is_active=False,
+            is_public=False,
+        )
+
+        call_command("seed_edge_case_data", password="edge-test-password", verbosity=0)
+
+        self.assertFalse(
+            InstitutionalUnit.objects.filter(slug__in=("nucleo-latec-teste", "unidade-externa-teste")).exists()
+        )
+        self.assertFalse(Project.objects.filter(slug="projeto-em-revisao-nucleo-teste").exists())
+        self.assertFalse(InstitutionMembership.objects.filter(role="Colaborador externo").exists())
+        self.assertTrue(Project.objects.filter(slug="projeto-em-revisao-teste").exists())
 
     def test_admin_edge_users_have_expected_scope(self):
         User = get_user_model()

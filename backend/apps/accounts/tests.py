@@ -6,10 +6,15 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
 from django.db import connection
-from django.forms import modelform_factory
+from django.forms import inlineformset_factory, modelform_factory
 from django.test import RequestFactory, TestCase
 
-from apps.accounts.admin import ProfileAdmin
+from apps.accounts.admin import (
+    ProfileAdmin,
+    ProfileAdminForm,
+    RequiredStaffProfileFormSet,
+    ScopedUserAdmin,
+)
 from apps.accounts.models import Profile
 from apps.axes.models import AxisMentorship, ResearchAxis
 from apps.common.admin_actions import mark_as_archived, mark_as_in_review, mark_as_published
@@ -290,7 +295,36 @@ class InstitutionalAdminPermissionTests(TestCase):
         self.assertTrue(InstitutionMembershipAdmin(InstitutionMembership, admin.site).has_module_permission(lab_request))
         self.assertFalse(InstitutionMembershipAdmin(InstitutionMembership, admin.site).has_module_permission(unit_request))
         self.assertTrue(ContactMessageAdmin(ContactMessage, admin.site).has_module_permission(lab_request))
-        self.assertFalse(ContactMessageAdmin(ContactMessage, admin.site).has_module_permission(unit_request))
+        contact_admin = ContactMessageAdmin(ContactMessage, admin.site)
+        mentor_request = self.request_for("mentor")
+        self.assertTrue(contact_admin.has_module_permission(unit_request))
+        self.assertFalse(contact_admin.has_module_permission(mentor_request))
+
+        contact = ContactMessage.objects.create(
+            contact_type=ContactMessage.ContactType.QUESTIONS,
+            subject="Atendimento compartilhado",
+            name="Visitante",
+            email="visitante@example.com",
+            message="Preciso de informações.",
+        )
+        self.assertEqual(list(contact_admin.get_queryset(unit_request)), [contact])
+        self.assertTrue(contact_admin.has_change_permission(unit_request, contact))
+        self.assertFalse(contact_admin.has_add_permission(unit_request))
+        self.assertFalse(contact_admin.has_delete_permission(unit_request, contact))
+        self.assertEqual(
+            set(contact_admin.get_readonly_fields(unit_request, contact)),
+            {"contact_type", "subject", "message", "name", "email", "organization", "created_at", "updated_at"},
+        )
+        contact_form_class = contact_admin.get_form(unit_request, contact)
+        self.assertEqual(set(contact_form_class.base_fields), {"status", "responded_at"})
+        contact_form = contact_form_class(
+            data={"status": ContactMessage.MessageStatus.IN_PROGRESS, "responded_at": ""},
+            instance=contact,
+        )
+        self.assertTrue(contact_form.is_valid(), contact_form.errors)
+        contact_admin.save_model(unit_request, contact_form.save(commit=False), contact_form, change=True)
+        contact.refresh_from_db()
+        self.assertEqual(contact.status, ContactMessage.MessageStatus.IN_PROGRESS)
 
         partner = Partner.objects.create(name="Parceiro compartilhado", slug="parceiro-compartilhado")
         partner.units.add(self.labtec, self.latec)
@@ -308,6 +342,80 @@ class InstitutionalAdminPermissionTests(TestCase):
             {value for value, _label in Profile.AdminRole.choices},
             {"lab_coordinator", "unit_coordinator", "mentor"},
         )
+
+    def test_active_profile_form_requires_a_valid_role_scope(self):
+        user = get_user_model().objects.create_user("profile_form")
+        common = {
+            "user": user.pk,
+            "role": Profile.AdminRole.LAB_COORDINATOR,
+            "primary_unit": self.latec.pk,
+            "authorized_units": [],
+            "inherit_descendants": False,
+            "is_active_admin": True,
+        }
+        form = ProfileAdminForm(data=common)
+        self.assertFalse(form.is_valid())
+        self.assertIn("LABTEC.IN", form.errors["primary_unit"][0])
+
+        common.update(role=Profile.AdminRole.UNIT_COORDINATOR, primary_unit="")
+        form = ProfileAdminForm(data=common)
+        self.assertFalse(form.is_valid())
+        self.assertIn("unidade", form.errors["primary_unit"][0])
+
+        common.update(role=Profile.AdminRole.MENTOR, primary_unit=self.latec.pk, person="")
+        form = ProfileAdminForm(data=common)
+        self.assertFalse(form.is_valid())
+        self.assertIn("pessoa", form.errors["person"][0])
+
+    def test_staff_user_inline_requires_an_active_valid_profile(self):
+        self.assertIn(Profile, [inline.model for inline in ScopedUserAdmin.inlines])
+        formset_class = inlineformset_factory(
+            get_user_model(),
+            Profile,
+            form=ProfileAdminForm,
+            formset=RequiredStaffProfileFormSet,
+            fields=(
+                "person",
+                "role",
+                "primary_unit",
+                "authorized_units",
+                "inherit_descendants",
+                "is_active_admin",
+            ),
+            extra=1,
+            can_delete=True,
+        )
+        staff_user = get_user_model().objects.create_user("pending_staff", is_staff=True)
+        self.client.force_login(self.users["superuser"])
+        self.assertContains(
+            self.client.get(f"/admin/auth/user/{staff_user.pk}/change/"),
+            'id="id_profile-TOTAL_FORMS"',
+        )
+        empty_data = {
+            "profile-TOTAL_FORMS": "1",
+            "profile-INITIAL_FORMS": "0",
+            "profile-MIN_NUM_FORMS": "0",
+            "profile-MAX_NUM_FORMS": "1",
+            "profile-0-person": "",
+            "profile-0-role": "",
+            "profile-0-primary_unit": "",
+            "profile-0-inherit_descendants": "",
+            "profile-0-is_active_admin": "",
+        }
+        formset = formset_class(data=empty_data, instance=staff_user, prefix="profile")
+        self.assertFalse(formset.is_valid())
+        self.assertIn("perfil administrativo ativo", formset.non_form_errors()[0])
+
+        valid_data = {
+            **empty_data,
+            "profile-0-role": Profile.AdminRole.UNIT_COORDINATOR,
+            "profile-0-primary_unit": str(self.latec.pk),
+            "profile-0-is_active_admin": "on",
+        }
+        self.assertTrue(formset_class(data=valid_data, instance=staff_user, prefix="profile").is_valid())
+
+        superuser = get_user_model().objects.create_superuser("profileless_superuser", password="password")
+        self.assertTrue(formset_class(data=empty_data, instance=superuser, prefix="profile").is_valid())
 
 
 class RemovedRoleMigrationTests(TestCase):

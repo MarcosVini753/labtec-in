@@ -8,7 +8,7 @@ A LATEC é uma liga acadêmica vinculada ao LABTEC.IN. Ela é uma unidade filha 
 
 O portal público é renderizado no servidor por Django Templates, com HTMX para atualizações parciais e Alpine.js para estado local. O backend Django oferece Django REST Framework, Django Admin e API `/api/v1/`. O backend organiza identidade institucional, pessoas, eixos, pesquisas, trabalhos acadêmicos, portfólio, produção científica, notícias, cursos, transparência, parcerias e métricas.
 
-As views em `apps/core/web_views.py` consultam o ORM diretamente e renderizam os templates de `backend/templates/portal/`. A API `/api/v1/` continua disponível para consumo externo e como endpoint do HTMX quando conveniente. Um frontend estático em JavaScript puro existiu como protótipo, mas não é mais necessário para testar ou operar o portal.
+As views em `apps/core/web_views.py` consultam o ORM diretamente e renderizam os templates de `backend/templates/portal/`. A API `/api/v1/` continua disponível para consumo externo. A busca HTML e `GET /api/v1/search/` compartilham a mesma consulta pública; o HTMX apenas substitui o fragmento já renderizado pelo servidor, sem ser requisito para navegar ou pesquisar. Um frontend estático em JavaScript puro existiu como protótipo, mas não é mais necessário para testar ou operar o portal.
 
 O app `institutional` modela LABTEC.IN como raiz e LATEC como filha. O seed cria 43 memberships, associa os sete eixos e os nove mentores à LATEC e classifica os conteúdos iniciais por unidade. Hierarquia e memberships possuem validações no modelo e no banco.
 
@@ -50,11 +50,11 @@ Atuar como CMS institucional e API pública, permitindo administrar:
 
 - Home direta do LABTEC.IN.
 - Institucional, pessoas e unidades.
-- Pesquisas e trabalhos acadêmicos.
-- Produções científicas.
-- Portfólio de soluções e iniciativas práticas.
+- Hub de Portfólio em `/portfolio/`, com acesso aos seis catálogos públicos.
+- Projetos e startups em `/portfolio/projetos/` e `/portfolio/projetos/startups/`.
+- Pesquisas, todos os tipos de trabalhos acadêmicos publicados e produções científicas.
 - Notícias e cursos.
-- Transparência, parceiros e contato.
+- Transparência, parceiros, busca e contato, com parceiros e busca também na navegação global.
 - Seção LATEC com seus vínculos, eixos e conteúdos.
 
 ## Eixos de atuação

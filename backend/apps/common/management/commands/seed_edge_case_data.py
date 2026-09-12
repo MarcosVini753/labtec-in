@@ -2,6 +2,7 @@ from datetime import date, datetime, time
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
+from django.db.models import ProtectedError
 from django.utils import timezone
 
 from apps.accounts.models import Profile
@@ -33,46 +34,28 @@ class Command(BaseCommand):
         if not self.labtec or not self.latec:
             raise CommandError("Execute 'python manage.py seed_initial_data' antes deste comando.")
 
-        self.seed_units()
         self.seed_people_and_memberships()
         self.seed_editorial_content()
         self.seed_support_data()
+        self.retire_removed_test_units()
         if options.get("password"):
             self.seed_admin_users(options["password"])
         else:
             self.stdout.write("Usuários administrativos omitidos; use --password para incluí-los.")
         self.stdout.write(self.style.SUCCESS("Dados de borda concluídos."))
 
-    def seed_units(self):
-        self.nucleus = self.unit(
-            "nucleo-latec-teste",
-            "Núcleo LATEC (teste)",
-            "NLT",
-            InstitutionalUnit.UnitType.INITIATIVE,
-            self.latec,
-            90,
-        )
-        self.external_unit = self.unit(
-            "unidade-externa-teste",
-            "Unidade externa (teste)",
-            "UET",
-            InstitutionalUnit.UnitType.RESEARCH_GROUP,
-            None,
-            91,
-        )
-
-    def unit(self, slug, name, acronym, unit_type, parent, display_order):
-        return InstitutionalUnit.objects.update_or_create(
-            slug=slug,
-            defaults={
-                "name": name,
-                "acronym": acronym,
-                "unit_type": unit_type,
-                "parent": parent,
-                "description": "Unidade criada para testar hierarquia e escopos.",
-                "display_order": display_order,
-            },
-        )[0]
+    def retire_removed_test_units(self):
+        """Aposenta unidades de teste removidas do seed em bases já inicializadas."""
+        removed_slugs = ("nucleo-latec-teste", "unidade-externa-teste")
+        InstitutionMembership.objects.filter(unit__slug__in=removed_slugs).delete()
+        Project.objects.filter(slug="projeto-em-revisao-nucleo-teste").delete()
+        for unit in InstitutionalUnit.objects.filter(slug__in=removed_slugs):
+            try:
+                unit.delete()
+            except ProtectedError:
+                self.stdout.write(
+                    self.style.WARNING(f"Unidade {unit.slug} mantida: ainda possui conteúdo vinculado.")
+                )
 
     def seed_people_and_memberships(self):
         self.people = {
@@ -96,7 +79,6 @@ class Command(BaseCommand):
         memberships = (
             ("pessoa-multiplos-vinculos-teste", self.labtec, "Pesquisador", {}),
             ("pessoa-multiplos-vinculos-teste", self.latec, "Orientador", {}),
-            ("pessoa-multiplos-vinculos-teste", self.external_unit, "Colaborador externo", {"is_active": False, "is_public": False, "end_date": date(2025, 12, 31)}),
             ("pessoa-vinculo-inativo-teste", self.latec, "Vínculo encerrado", {"is_active": False, "is_public": False, "start_date": date(2024, 1, 1), "end_date": date(2025, 12, 31)}),
             ("pessoa-vinculo-futuro-teste", self.latec, "Vínculo futuro", {"start_date": date(2099, 1, 1)}),
         )
@@ -111,8 +93,8 @@ class Command(BaseCommand):
     def seed_editorial_content(self):
         projects = (
             ("projeto-rascunho-teste", "Projeto em rascunho (teste)", self.latec, EditorialStatus.DRAFT, None, False),
-            ("projeto-em-revisao-nucleo-teste", "Projeto em revisão no núcleo (teste)", self.nucleus, EditorialStatus.IN_REVIEW, None, True),
-            ("projeto-arquivado-teste", "Projeto arquivado (teste)", self.external_unit, EditorialStatus.ARCHIVED, None, False),
+            ("projeto-em-revisao-teste", "Projeto em revisão (teste)", self.latec, EditorialStatus.IN_REVIEW, None, True),
+            ("projeto-arquivado-teste", "Projeto arquivado (teste)", self.latec, EditorialStatus.ARCHIVED, None, False),
         )
         for slug, title, unit, editorial_status, status, include_in_parent in projects:
             Project.objects.update_or_create(
@@ -168,7 +150,7 @@ class Command(BaseCommand):
             ResearchProject.objects.update_or_create(
                 slug=slug,
                 defaults={
-                    "unit": self.nucleus,
+                    "unit": self.latec,
                     "title": title,
                     "summary": "Pesquisa criada para testar status e filtros públicos.",
                     "project_status": ResearchProject.ProjectStatus.SUSPENDED,
@@ -243,7 +225,6 @@ class Command(BaseCommand):
             ("edge-unit-coordinator", Profile.AdminRole.UNIT_COORDINATOR, self.latec, None, False, (self.latec,)),
             ("edge-mentor", Profile.AdminRole.MENTOR, self.latec, self.people["pessoa-sem-vinculo-teste"], False, (self.latec,)),
             ("edge-inactive-admin", Profile.AdminRole.UNIT_COORDINATOR, self.latec, None, False, (self.latec,)),
-            ("edge-wrong-lab-coordinator", Profile.AdminRole.LAB_COORDINATOR, self.latec, None, False, (self.latec,)),
         )
         for username, role, unit, person, inherit, authorized_units in specs:
             user = User.objects.get_or_create(username=username, defaults={"email": f"{username}@example.com"})[0]

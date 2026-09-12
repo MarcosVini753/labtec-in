@@ -1,0 +1,14 @@
+{% if not query %}
+  <p class="empty-state">Digite um termo para pesquisar.</p>
+{% elif results %}
+  {% for result in results %}
+    <article class="card">
+      <p class="section-kicker">{% if result.type == 'person' %}Pessoa{% elif result.type == 'project' %}Projeto{% elif result.type == 'research_project' %}Pesquisa{% elif result.type == 'academic_work' %}Trabalho acadêmico{% elif result.type == 'scientific_output' %}Produção científica{% elif result.type == 'post' %}Notícia{% elif result.type == 'course' %}Capacitação{% elif result.type == 'transparency_document' %}Transparência{% else %}Parceiro{% endif %}</p>
+      <h3><a href="{{ result.url }}">{{ result.title }}</a></h3>
+      {% if result.summary %}<p>{{ result.summary }}</p>{% endif %}
+      {% if result.unit %}<div class="card-meta"><span class="tag">{{ result.unit.name }}</span></div>{% endif %}
+    </article>
+  {% endfor %}
+{% else %}
+  <p class="empty-state">Nenhum resultado encontrado.</p>
+{% endif %}
